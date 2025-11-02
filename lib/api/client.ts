@@ -67,14 +67,13 @@ export async function logout(): Promise<void> {
 // ============================================
 
 /**
- * 프로필 정보 업데이트 (실명, 국가, 언어, 닉네임)
+ * 프로필 정보 업데이트 (실명, 국가, 언어)
  * 백엔드 연동 시: PATCH /users/me
  */
 export async function updateProfile(data: {
   realName: string;
   country: string;
   language: string;
-  nickname?: string;
 }): Promise<User> {
   await delay(500);
   return { ...currentUser, ...data };

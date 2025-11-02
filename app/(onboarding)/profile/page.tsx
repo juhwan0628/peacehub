@@ -13,8 +13,7 @@ import { updateProfile } from '@/lib/api/client';
  * 프로필 설정 페이지
  *
  * Google 로그인 후 처음 진입하는 페이지
- * 실명, 국가, 언어를 필수로 입력받고
- * 닉네임은 선택사항으로 입력받습니다.
+ * 실명, 국가, 언어를 필수로 입력받습니다.
  *
  * 완료 후 /join-room으로 이동
  */
@@ -26,7 +25,6 @@ export default function ProfilePage() {
   const [realName, setRealName] = useState('');
   const [country, setCountry] = useState('');
   const [language, setLanguage] = useState('');
-  const [nickname, setNickname] = useState('');
 
   // 에러 상태
   const [errors, setErrors] = useState<{
@@ -81,7 +79,6 @@ export default function ProfilePage() {
         realName: realName.trim(),
         country,
         language,
-        nickname: nickname.trim() || undefined,
       });
 
       // 성공 시 다음 페이지로 이동
@@ -157,23 +154,6 @@ export default function ProfilePage() {
               fullWidth
               required
             />
-
-            {/* 닉네임 입력 (선택) */}
-            <Input
-              label="닉네임 (선택)"
-              type="text"
-              placeholder="닉네임을 입력하지 않으면 실명이 사용됩니다"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              fullWidth
-            />
-
-            {/* 안내 문구 */}
-            <div className="pt-2">
-              <p className="text-sm text-gray-500">
-                <span className="text-red-500">*</span> 표시가 없는 항목은 필수입니다
-              </p>
-            </div>
 
             {/* 제출 버튼 */}
             <Button
