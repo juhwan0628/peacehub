@@ -72,15 +72,15 @@ export const mockRoom: Room = {
 // 더미 주간 스케줄 (user-1)
 // ============================================
 
-// 기본 스케줄: 모든 시간대를 'free'로 초기화
+// 기본 스케줄: 모든 시간대를 null(비는 시간)로 초기화
 const createEmptySchedule = (): WeeklySchedule => {
   const days: DayOfWeek[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const schedule: Partial<WeeklySchedule> = {};
 
   days.forEach(day => {
-    const hours: { [hour: number]: 'free' } = {};
+    const hours: { [hour: number]: null } = {};
     for (let i = 0; i < 24; i++) {
-      hours[i] = 'free';
+      hours[i] = null;
     }
     schedule[day] = hours;
   });

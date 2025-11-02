@@ -2,11 +2,22 @@
 // 타임테이블 관련 타입
 // ============================================
 
-// 시간대 상태: 조용, 수면, 바쁨, 비는 시간
-export type TimeSlot = 'quiet' | 'sleep' | 'busy' | 'free';
+// 시간대 상태: 조용, 수면, 바쁨 (null = 비는 시간)
+export type TimeSlot = 'quiet' | 'sleep' | 'busy' | null;
 
 // 요일 타입
 export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+// 요일 한글 이름 매핑
+export const DAY_NAMES: Record<DayOfWeek, string> = {
+  mon: '월',
+  tue: '화',
+  wed: '수',
+  thu: '목',
+  fri: '금',
+  sat: '토',
+  sun: '일',
+};
 
 // 시간대별 스케줄 (0-23시)
 export type HourlySchedule = {
