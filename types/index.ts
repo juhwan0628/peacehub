@@ -25,11 +25,44 @@ export type WeeklySchedule = {
 export interface User {
   id: string;
   email: string;
-  nickname: string;
+  realName: string; // 실명
+  country: string; // 국가 코드 (예: KR, US, JP)
+  language: string; // 언어 코드 (예: ko, en, ja)
+  nickname?: string; // 닉네임 (선택)
   profileImage?: string;
   roomId?: string;
   createdAt: string;
 }
+
+// 지원 국가 목록
+export const COUNTRIES = [
+  { code: 'KR', name: '대한민국 (South Korea)' },
+  { code: 'US', name: '미국 (United States)' },
+  { code: 'JP', name: '일본 (Japan)' },
+  { code: 'CN', name: '중국 (China)' },
+  { code: 'GB', name: '영국 (United Kingdom)' },
+  { code: 'FR', name: '프랑스 (France)' },
+  { code: 'DE', name: '독일 (Germany)' },
+  { code: 'CA', name: '캐나다 (Canada)' },
+  { code: 'AU', name: '호주 (Australia)' },
+  { code: 'IN', name: '인도 (India)' },
+  { code: 'VN', name: '베트남 (Vietnam)' },
+  { code: 'TH', name: '태국 (Thailand)' },
+] as const;
+
+// 지원 언어 목록
+export const LANGUAGES = [
+  { code: 'ko', name: '한국어 (Korean)' },
+  { code: 'en', name: '영어 (English)' },
+  { code: 'ja', name: '일본어 (Japanese)' },
+  { code: 'zh', name: '중국어 (Chinese)' },
+  { code: 'es', name: '스페인어 (Spanish)' },
+  { code: 'fr', name: '프랑스어 (French)' },
+  { code: 'de', name: '독일어 (German)' },
+  { code: 'vi', name: '베트남어 (Vietnamese)' },
+  { code: 'th', name: '태국어 (Thai)' },
+  { code: 'hi', name: '힌디어 (Hindi)' },
+] as const;
 
 // ============================================
 // 방(Room) 관련 타입

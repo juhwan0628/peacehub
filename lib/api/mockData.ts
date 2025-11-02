@@ -9,6 +9,9 @@ export const mockUsers: User[] = [
   {
     id: 'user-1',
     email: 'john@example.com',
+    realName: '김철수',
+    country: 'KR',
+    language: 'ko',
     nickname: '존',
     profileImage: 'https://via.placeholder.com/100',
     roomId: 'room-1',
@@ -17,6 +20,9 @@ export const mockUsers: User[] = [
   {
     id: 'user-2',
     email: 'jane@example.com',
+    realName: '이영희',
+    country: 'KR',
+    language: 'ko',
     nickname: '제인',
     profileImage: 'https://via.placeholder.com/100',
     roomId: 'room-1',
@@ -25,6 +31,9 @@ export const mockUsers: User[] = [
   {
     id: 'user-3',
     email: 'bob@example.com',
+    realName: '박민수',
+    country: 'KR',
+    language: 'ko',
     nickname: '밥',
     profileImage: 'https://via.placeholder.com/100',
     roomId: 'room-1',
@@ -33,6 +42,9 @@ export const mockUsers: User[] = [
   {
     id: 'user-4',
     email: 'alice@example.com',
+    realName: '최지은',
+    country: 'KR',
+    language: 'ko',
     nickname: '앨리스',
     profileImage: 'https://via.placeholder.com/100',
     roomId: 'room-1',
