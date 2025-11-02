@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 /**
  * 공통 셀렉트 컴포넌트
@@ -37,8 +37,9 @@ export default function Select({
   id,
   ...props
 }: SelectProps) {
-  // 고유 ID 생성 (label과 select 연결용)
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+  // 고유 ID 생성 (label과 select 연결용) - useId를 사용하여 서버/클라이언트 일치
+  const generatedId = useId();
+  const selectId = id || generatedId;
 
   // 기본 스타일
   const baseStyles = 'px-4 py-2 border rounded-lg transition-colors duration-200 bg-white';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 /**
  * 공통 입력 필드 컴포넌트
@@ -22,8 +22,9 @@ export default function Input({
   id,
   ...props
 }: InputProps) {
-  // 고유 ID 생성 (label과 input 연결용)
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  // 고유 ID 생성 (label과 input 연결용) - useId를 사용하여 서버/클라이언트 일치
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // 기본 스타일
   const baseStyles = 'px-4 py-2 border rounded-lg transition-colors duration-200';
