@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">대시보드를 불러오는 중...</p>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
   if (!currentUser || !schedule) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
         </div>
@@ -82,7 +82,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8">
+    <div className="bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8 min-h-[calc(100vh-4rem)]">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="text-center">
