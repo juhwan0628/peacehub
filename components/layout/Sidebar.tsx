@@ -106,8 +106,9 @@ export default function Sidebar({ isOpen, onClose, user, room }: SidebarProps) {
       {/* 오버레이 (바깥 클릭 시 닫힘) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={onClose}
+          aria-label="사이드바 닫기"
         />
       )}
 

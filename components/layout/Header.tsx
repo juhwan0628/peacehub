@@ -1,9 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 /**
  * 헤더 컴포넌트
  *
- * 햄버거 메뉴 버튼
+ * 햄버거 메뉴 버튼, 홈 이동 로고
  */
 
 interface HeaderProps {
@@ -11,6 +13,12 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+  const router = useRouter();
+
+  const handleLogoClick = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-30 flex items-center px-4">
       {/* 햄버거 메뉴 버튼 */}
@@ -34,9 +42,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </svg>
       </button>
 
-      {/* 로고 (중앙 또는 좌측) */}
+      {/* 로고 (중앙 또는 좌측) - 클릭 시 대시보드로 이동 */}
       <div className="flex-1 flex justify-center lg:justify-start lg:ml-4">
-        <h1 className="text-xl font-bold text-primary-600">🏠 peaceHub</h1>
+        <button
+          onClick={handleLogoClick}
+          className="text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
+        >
+          🏠 peaceHub
+        </button>
       </div>
     </header>
   );
