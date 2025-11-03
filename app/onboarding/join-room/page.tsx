@@ -99,7 +99,7 @@ export default function JoinRoomPage() {
       await joinRoom(roomCode.trim().toUpperCase());
 
       // 성공 시 다음 페이지로 이동
-      router.push('/schedule');
+      router.push('/onboarding/schedule');
     } catch (error) {
       console.error('방 참여 실패:', error);
       setRoomCodeError('유효하지 않은 방 코드입니다');
@@ -113,7 +113,7 @@ export default function JoinRoomPage() {
    */
   const handleModalClose = () => {
     setShowSuccessModal(false);
-    router.push('/schedule');
+    router.push('/onboarding/schedule');
   };
 
   return (

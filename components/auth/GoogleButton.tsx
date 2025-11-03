@@ -21,7 +21,7 @@ export default function GoogleButton({ onClick }: GoogleButtonProps) {
       // 백엔드 연동 시: window.location.href = '/api/auth/google'
       console.log('Google 로그인 클릭');
       // 프로토타입에서는 프로필 설정 페이지로 이동
-      window.location.href = '/profile';
+      window.location.href = '/onboarding/profile';
     }
   };
 
