@@ -272,6 +272,7 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
 // ============================================
 
 export const mockPreferences: Preference[] = [
+  // user-1 (양희석) - 제출 완료
   {
     userId: 'user-1',
     roomId: 'room-1',
@@ -279,32 +280,22 @@ export const mockPreferences: Preference[] = [
     second: 'trash',
     submittedAt: '2025-01-05T12:00:00Z',
   },
-  {
-    userId: 'user-2',
-    roomId: 'room-1',
-    first: 'laundry',
-    second: 'room',
-    submittedAt: '2025-01-05T13:00:00Z',
-  },
+  // user-2 (이세용) - 미제출
+  // user-3 (정준영) - 제출 완료
   {
     userId: 'user-3',
     roomId: 'room-1',
     first: 'dishes',
-    second: 'trash',
+    second: 'grocery',
     submittedAt: '2025-01-05T14:00:00Z',
   },
-  {
-    userId: 'user-4',
-    roomId: 'room-1',
-    first: 'trash',
-    second: 'room',
-    submittedAt: '2025-01-05T15:00:00Z',
-  },
+  // user-4 (조재현) - 미제출
+  // user-5 (허주환) - 제출 완료 (현재 사용자)
   {
     userId: 'user-5',
     roomId: 'room-1',
-    first: 'dishes',
-    second: 'laundry',
+    first: 'vacuum',
+    second: 'mopping',
     submittedAt: '2025-01-05T16:00:00Z',
   },
 ];
@@ -355,7 +346,7 @@ export const mockAssignments: Assignment[] = [
     id: 'assign-1-5',
     userId: 'user-5',
     roomId: 'room-1',
-    taskId: 'room',
+    taskId: 'vacuum',
     days: ['mon', 'wed', 'fri'],
     weekStart: '2024-12-30',
     createdAt: '2024-12-30T03:00:00Z',
@@ -375,7 +366,7 @@ export const mockAssignments: Assignment[] = [
     id: 'assign-2-2',
     userId: 'user-2',
     roomId: 'room-1',
-    taskId: 'room',
+    taskId: 'grocery',
     days: ['tue', 'wed', 'thu'],
     weekStart: '2025-01-06',
     createdAt: '2025-01-06T03:00:00Z',
@@ -440,7 +431,7 @@ export const mockAssignments: Assignment[] = [
     id: 'assign-3-4',
     userId: 'user-4',
     roomId: 'room-1',
-    taskId: 'room',
+    taskId: 'fridge',
     days: ['tue', 'wed', 'sat'],
     weekStart: '2025-01-13',
     createdAt: '2025-01-13T03:00:00Z',
@@ -460,7 +451,7 @@ export const mockAssignments: Assignment[] = [
     id: 'assign-4-1',
     userId: 'user-1',
     roomId: 'room-1',
-    taskId: 'room',
+    taskId: 'mopping',
     days: ['mon', 'wed', 'fri'],
     weekStart: '2025-01-20',
     createdAt: '2025-01-20T03:00:00Z',
@@ -525,7 +516,7 @@ export const mockAssignments: Assignment[] = [
     id: 'assign-5-3',
     userId: 'user-3',
     roomId: 'room-1',
-    taskId: 'room',
+    taskId: 'vacuum',
     days: ['tue', 'thu', 'fri'],
     weekStart: '2025-01-27',
     createdAt: '2025-01-27T03:00:00Z',

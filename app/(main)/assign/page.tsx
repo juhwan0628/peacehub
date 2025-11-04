@@ -6,8 +6,15 @@ import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { TASKS } from '@/types';
-import { getMyPreference, savePreference } from '@/lib/api/client';
-import type { Preference } from '@/types';
+import {
+  getMyPreference,
+  savePreference,
+  getRoomPreferences,
+  getRoomMembers,
+  getCurrentUser,
+  getMyRoom,
+} from '@/lib/api/client';
+import type { Preference, User } from '@/types';
 
 /**
  * 업무 배정 페이지
@@ -27,6 +34,11 @@ export default function AssignPage() {
   // 기존 선호도
   const [existingPreference, setExistingPreference] = useState<Preference | null>(null);
 
+  // 룸메 데이터
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [roomMembers, setRoomMembers] = useState<User[]>([]);
+  const [roomPreferences, setRoomPreferences] = useState<Preference[]>([]);
+
   // UI 상태
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,22 +48,38 @@ export default function AssignPage() {
    * 초기 데이터 로드
    */
   useEffect(() => {
-    const loadPreference = async () => {
+    const loadData = async () => {
       try {
-        const preference = await getMyPreference();
+        const [user, room, preference] = await Promise.all([
+          getCurrentUser(),
+          getMyRoom(),
+          getMyPreference(),
+        ]);
+
+        setCurrentUser(user);
+
+        if (room) {
+          const [members, preferences] = await Promise.all([
+            getRoomMembers(room.id),
+            getRoomPreferences(room.id),
+          ]);
+          setRoomMembers(members);
+          setRoomPreferences(preferences);
+        }
+
         if (preference) {
           setExistingPreference(preference);
           setFirst(preference.first);
           setSecond(preference.second);
         }
       } catch (error) {
-        console.error('선호도 로드 실패:', error);
+        console.error('데이터 로드 실패:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadPreference();
+    loadData();
   }, []);
 
   /**
@@ -166,28 +194,6 @@ export default function AssignPage() {
           </div>
         </div>
 
-        {/* 기존 선호도 표시 */}
-        {existingPreference && (
-          <Card padding="md">
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="text-sm font-semibold text-blue-800 mb-2">
-                ✅ 이미 제출된 선호도
-              </p>
-              <p className="text-sm text-blue-700">
-                1지망:{' '}
-                {TASKS.find((t) => t.id === existingPreference.first)?.name}
-              </p>
-              <p className="text-sm text-blue-700">
-                2지망:{' '}
-                {TASKS.find((t) => t.id === existingPreference.second)?.name}
-              </p>
-              <p className="text-xs text-blue-600 mt-2">
-                아래에서 수정할 수 있습니다
-              </p>
-            </div>
-          </Card>
-        )}
-
         {/* 선호도 선택 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 1지망 */}
@@ -224,6 +230,66 @@ export default function AssignPage() {
               placeholder="집안일을 선택하세요"
               fullWidth
             />
+          </Card>
+
+          {/* 룸메들의 선호도 */}
+          <Card padding="md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              👥 다른 룸메들의 선호도
+            </h3>
+            <div className="space-y-2">
+              {roomMembers
+                .filter((member) => member.id !== currentUser?.id)
+                .map((member) => {
+                  const preference = roomPreferences.find(
+                    (p) => p.userId === member.id
+                  );
+
+                  if (!preference) {
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded"
+                      >
+                        <span className="font-medium text-gray-800">
+                          {member.realName}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          아직 제출하지 않음
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  const firstTask = TASKS.find(
+                    (t) => t.id === preference.first
+                  );
+                  const secondTask = TASKS.find(
+                    (t) => t.id === preference.second
+                  );
+
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between py-2 px-3 bg-green-50 rounded"
+                    >
+                      <span className="font-medium text-gray-800">
+                        {member.realName}
+                      </span>
+                      <span className="text-sm text-gray-700">
+                        1지망: {firstTask?.name}, 2지망: {secondTask?.name}
+                      </span>
+                    </div>
+                  );
+                })}
+
+              {roomMembers.filter((m) => m.id !== currentUser?.id).length ===
+                0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  다른 룸메가 없습니다
+                </p>
+              )}
+            </div>
           </Card>
 
           {/* 안내 */}

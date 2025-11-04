@@ -2,6 +2,7 @@
 
 import type { Assignment, User, DayOfWeek } from '@/types';
 import { TASKS } from '@/types';
+import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
 
 /**
  * 일별 업무 목록 컴포넌트
@@ -15,15 +16,6 @@ interface DailyTasksProps {
   users: User[];
   selectedUserId: string | null; // null = 전체
 }
-
-// 집안일 이모지 매핑
-const TASK_EMOJIS: Record<string, string> = {
-  bathroom: '🚽',
-  trash: '🗑️',
-  room: '🧹',
-  laundry: '👔',
-  dishes: '🍽️',
-};
 
 // 날짜에서 주의 시작일(월요일) 계산
 function getWeekStart(date: Date): string {

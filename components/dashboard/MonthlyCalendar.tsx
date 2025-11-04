@@ -2,6 +2,7 @@
 
 import type { Assignment, DayOfWeek } from '@/types';
 import { TASKS } from '@/types';
+import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
 
 /**
  * 월간 캘린더 컴포넌트
@@ -20,15 +21,6 @@ interface MonthlyCalendarProps {
   onDateClick: (date: Date) => void;
   onMonthChange: (date: Date) => void;
 }
-
-// 집안일 이모지 매핑
-const TASK_EMOJIS: Record<string, string> = {
-  bathroom: '🚽',
-  trash: '🗑️',
-  room: '🧹',
-  laundry: '👔',
-  dishes: '🍽️',
-};
 
 // 날짜에서 주의 시작일(월요일) 계산
 function getWeekStart(date: Date): string {

@@ -101,11 +101,14 @@ export interface Task {
 
 // 고정된 업무 목록
 export const TASKS: Task[] = [
-  { id: 'bathroom', name: '화장실 청소', weight: 9 },
+  { id: 'bathroom', name: '화장실 청소', weight: 8 },
   { id: 'trash', name: '쓰레기 버리기', weight: 5 },
-  { id: 'room', name: '방 정리', weight: 3 },
-  { id: 'laundry', name: '빨래하기', weight: 3 },
-  { id: 'dishes', name: '설거지', weight: 2 },
+  { id: 'vacuum', name: '청소기 돌리기', weight: 6 },
+  { id: 'laundry', name: '빨래하기', weight: 4 },
+  { id: 'dishes', name: '설거지', weight: 3 },
+  { id: 'grocery', name: '장보기', weight: 5 },
+  { id: 'fridge', name: '냉장고 관리', weight: 3 },
+  { id: 'mopping', name: '걸레질', weight: 6 },
 ];
 
 // ============================================

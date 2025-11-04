@@ -192,6 +192,15 @@ export async function savePreference(first: string, second: string): Promise<voi
   console.log('선호도 저장됨:', { first, second });
 }
 
+/**
+ * 방의 모든 멤버 선호도 가져오기
+ * 백엔드 연동 시: GET /preferences/room/:roomId
+ */
+export async function getRoomPreferences(roomId: string): Promise<Preference[]> {
+  await delay(300);
+  return mockPreferences.filter((p) => p.roomId === roomId);
+}
+
 // ============================================
 // 배정 결과 관련 API
 // ============================================
