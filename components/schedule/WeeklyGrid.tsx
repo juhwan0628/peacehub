@@ -18,14 +18,13 @@ interface WeeklyGridProps {
 }
 
 // 시간대 색상 매핑 (TimelineBar와 통일)
-const SLOT_COLORS: Record<string, string> = {
+const SLOT_COLORS: Record<NonNullable<TimeSlot>, string> = {
   quiet: 'bg-gray-600',
   out: 'bg-red-400',
-  null: 'bg-gray-100',
 };
 
 // 시간대 라벨
-const SLOT_LABELS: Record<string, string> = {
+const SLOT_LABELS: Record<NonNullable<TimeSlot>, string> = {
   quiet: '조용시간',
   out: '외출',
 };
@@ -152,7 +151,7 @@ export default function WeeklyGrid({ schedule, onChange }: WeeklyGridProps) {
 
     for (let hour = 0; hour < 24; hour++) {
       const slotType = daySchedule?.[hour];
-      const colorClass = SLOT_COLORS[slotType || 'null'];
+      const colorClass = slotType ? SLOT_COLORS[slotType] : 'bg-gray-100';
 
       blocks.push(
         <div
@@ -176,7 +175,7 @@ export default function WeeklyGrid({ schedule, onChange }: WeeklyGridProps) {
           상태 선택 (클릭/드래그로 시간대 선택, 같은 색 클릭 시 지우기)
         </p>
         <div className="flex gap-3">
-          {(['quiet', 'out'] as TimeSlot[]).map((mode) => (
+          {(['quiet', 'out'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setPaintMode(mode)}

@@ -111,12 +111,13 @@ export const mockWeeklySchedule: WeeklySchedule = (() => {
     schedule[day as DayOfWeek][9] = 'quiet';
   });
 
-  // 평일 외출 시간 (10-18시, 수업/일)
+  // 평일 외출 시간 (10-17시, 수업/일) - 짧게 조정
   ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-    for (let hour = 10; hour <= 18; hour++) {
+    for (let hour = 10; hour <= 17; hour++) {
       schedule[day as DayOfWeek][hour] = 'out';
     }
   });
+  // 평일 비는 시간 (18-20시) - 업무 가능 시간
 
   // 주말 조용시간 (0-9시)
   ['sat', 'sun'].forEach(day => {
@@ -139,15 +140,16 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });
-    // 평일 외출 (9-17시)
+    // 평일 외출 (9-16시) - 짧게 조정
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 9; hour <= 17; hour++) {
+      for (let hour = 9; hour <= 16; hour++) {
         schedule[day as DayOfWeek][hour] = 'out';
       }
     });
-    // 평일 조용시간 (18-23시)
+    // 평일 비는 시간 (17-20시) - 업무 가능 시간
+    // 평일 조용시간 (21-23시)
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 18; hour <= 23; hour++) {
+      for (let hour = 21; hour <= 23; hour++) {
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });
@@ -163,19 +165,23 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
   // User-2: 이세용
   ['user-2', (() => {
     const schedule = createEmptySchedule();
-    // 평일 조용시간 (0-7시, 20-23시)
+    // 평일 조용시간 (0-8시)
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 0; hour <= 7; hour++) {
-        schedule[day as DayOfWeek][hour] = 'quiet';
-      }
-      for (let hour = 20; hour <= 23; hour++) {
+      for (let hour = 0; hour <= 8; hour++) {
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });
-    // 평일 외출 (8-19시)
+    // 평일 외출 (9-17시) - 짧게 조정
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 8; hour <= 19; hour++) {
+      for (let hour = 9; hour <= 17; hour++) {
         schedule[day as DayOfWeek][hour] = 'out';
+      }
+    });
+    // 평일 비는 시간 (18-20시) - 업무 가능 시간
+    // 평일 조용시간 (21-23시)
+    ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
+      for (let hour = 21; hour <= 23; hour++) {
+        schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });
     // 주말 조용시간 (0-11시, 22-23시)
@@ -192,19 +198,13 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
   // User-3: 정준영
   ['user-3', (() => {
     const schedule = createEmptySchedule();
-    // 평일 조용시간 (0-6시, 19-23시)
+    // 평일 조용시간 (0-6시, 21-23시)
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
       for (let hour = 0; hour <= 6; hour++) {
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
-      for (let hour = 19; hour <= 23; hour++) {
+      for (let hour = 21; hour <= 23; hour++) {
         schedule[day as DayOfWeek][hour] = 'quiet';
-      }
-    });
-    // 평일 외출 (10-18시)
-    ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 10; hour <= 18; hour++) {
-        schedule[day as DayOfWeek][hour] = 'out';
       }
     });
     // 평일 조용시간 (7-9시)
@@ -213,6 +213,13 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
       schedule[day as DayOfWeek][8] = 'quiet';
       schedule[day as DayOfWeek][9] = 'quiet';
     });
+    // 평일 외출 (10-17시) - 짧게 조정
+    ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
+      for (let hour = 10; hour <= 17; hour++) {
+        schedule[day as DayOfWeek][hour] = 'out';
+      }
+    });
+    // 평일 비는 시간 (18-20시) - 업무 가능 시간
     // 주말 조용시간 (0-9시, 21-23시)
     ['sat', 'sun'].forEach(day => {
       for (let hour = 0; hour <= 9; hour++) {
@@ -234,15 +241,16 @@ export const mockAllSchedules: Map<string, WeeklySchedule> = new Map([
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });
-    // 평일 외출 (9-16시)
+    // 평일 외출 (9-16시) - 짧게 조정
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
       for (let hour = 9; hour <= 16; hour++) {
         schedule[day as DayOfWeek][hour] = 'out';
       }
     });
-    // 평일 조용시간 (17-23시)
+    // 평일 비는 시간 (17-20시) - 업무 가능 시간
+    // 평일 조용시간 (21-23시) - 짧게 조정
     ['mon', 'tue', 'wed', 'thu', 'fri'].forEach(day => {
-      for (let hour = 17; hour <= 23; hour++) {
+      for (let hour = 21; hour <= 23; hour++) {
         schedule[day as DayOfWeek][hour] = 'quiet';
       }
     });

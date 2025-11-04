@@ -152,7 +152,7 @@ export default function MonthlyCalendar({
       <div className="grid grid-cols-7 gap-1">
         {calendarDays.map((date, index) => {
           if (!date) {
-            return <div key={`empty-${index}`} className="aspect-square" />;
+            return <div key={`empty-${index}`} className="h-12 w-full" />;
           }
 
           const tasksForDay = getTasksForDate(date);
