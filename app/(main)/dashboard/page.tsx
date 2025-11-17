@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import MonthlyCalendar from '@/components/dashboard/MonthlyCalendar';
 import CombinedTimelineBar from '@/components/dashboard/CombinedTimelineBar';
 import TimelineBar from '@/components/dashboard/TimelineBar';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useApiData } from '@/hooks/useApiData';
 import type { User, Assignment, WeeklySchedule } from '@/types';
 import {
   getCurrentUser,
@@ -19,17 +20,16 @@ import {
  * 월간 캘린더 + 통합 타임라인 + 개인 타임라인
  */
 
-export default function DashboardPage() {
-  // 상태
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [allSchedules, setAllSchedules] = useState<Map<string, WeeklySchedule>>(new Map());
+interface DashboardData {
+  currentUser: User | null;
+  users: User[];
+  assignments: Assignment[];
+  allSchedules: Map<string, WeeklySchedule>;
+}
 
+export default function DashboardPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  const [isLoading, setIsLoading] = useState(true);
 
   // 스크롤 타겟 ref
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -37,32 +37,26 @@ export default function DashboardPage() {
   /**
    * 초기 데이터 로드
    */
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [user, members, assignmentsData] = await Promise.all([
-          getCurrentUser(),
-          getRoomMembers('room-1'),
-          getCurrentAssignments(),
-        ]);
+  const loadDashboardData = useCallback(async (): Promise<DashboardData> => {
+    const [user, members, assignmentsData] = await Promise.all([
+      getCurrentUser(),
+      getRoomMembers('room-1'),
+      getCurrentAssignments(),
+    ]);
 
-        setCurrentUser(user);
-        setUsers(members);
-        setAssignments(assignmentsData);
+    // 모든 사용자의 스케줄 가져오기
+    const userIds = members.map(u => u.id);
+    const schedules = await getAllSchedules(userIds);
 
-        // 모든 사용자의 스케줄 가져오기
-        const userIds = members.map(u => u.id);
-        const schedules = await getAllSchedules(userIds);
-        setAllSchedules(schedules);
-      } catch (error) {
-        console.error('데이터 로드 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    return {
+      currentUser: user,
+      users: members,
+      assignments: assignmentsData,
+      allSchedules: schedules,
     };
-
-    loadData();
   }, []);
+
+  const { data, isLoading } = useApiData(loadDashboardData);
 
   /**
    * 날짜 클릭 핸들러 (스크롤 포함)
@@ -75,16 +69,16 @@ export default function DashboardPage() {
     }, 100);
   };
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <MainLoadingSpinner text="대시보드를 불러오는 중..." />;
   }
+
+  const { currentUser, users, assignments, allSchedules } = data;
 
   if (!currentUser) {
     return (
       <div className="page-container flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
-        </div>
+        <p className="text-gray-600">사용자 정보를 불러올 수 없습니다.</p>
       </div>
     );
   }

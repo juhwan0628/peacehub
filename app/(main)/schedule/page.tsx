@@ -1,33 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '@/components/ui/Button';
 import ScheduleEditor from '@/components/schedule/ScheduleEditor';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { saveSchedule, getMySchedule } from '@/lib/api/client';
 import { createEmptySchedule } from '@/lib/utils/scheduleHelpers';
+import { useApiData } from '@/hooks/useApiData';
 import type { WeeklySchedule } from '@/types';
 
 export default function MainSchedulePage() {
-  const [schedule, setSchedule] = useState<WeeklySchedule | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const loadSchedule = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getMySchedule();
-        setSchedule(data);
-      } catch (error) {
-        console.error('스케줄 로드 실패:', error);
+  const { data: schedule, isLoading, setData: setSchedule } = useApiData(
+    getMySchedule,
+    {
+      onError: () => {
         setSchedule(createEmptySchedule());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadSchedule();
-  }, []);
+      },
+    }
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * 변경사항 저장

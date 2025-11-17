@@ -2,7 +2,9 @@
 
 import type { Assignment, User, DayOfWeek } from '@/types';
 import { TASKS } from '@/types';
-import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
+import { TASK_EMOJIS } from '@/lib/constants/tasks';
+import { getWeekStart, getDayOfWeek } from '@/lib/utils/dateHelpers';
+import { getUserName, getTaskInfo } from '@/lib/utils/taskHelpers';
 
 /**
  * 일별 업무 목록 컴포넌트
@@ -15,21 +17,6 @@ interface DailyTasksProps {
   assignments: Assignment[];
   users: User[];
   selectedUserId: string | null; // null = 전체
-}
-
-// 날짜에서 주의 시작일(월요일) 계산
-function getWeekStart(date: Date): string {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 일요일이면 -6, 아니면 +1
-  d.setDate(diff);
-  return d.toISOString().split('T')[0];
-}
-
-// 날짜에서 요일 추출
-function getDayOfWeek(date: Date): DayOfWeek {
-  const days: DayOfWeek[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-  return days[date.getDay()];
 }
 
 export default function DailyTasks({
@@ -54,21 +41,6 @@ export default function DailyTasks({
     ? dailyAssignments.filter((a) => a.userId === selectedUserId)
     : dailyAssignments;
 
-  // 사용자 찾기
-  const getUserName = (userId: string) => {
-    const user = users.find((u) => u.id === userId);
-    return user?.realName || '알 수 없음';
-  };
-
-  // 집안일 정보 찾기
-  const getTaskInfo = (taskId: string) => {
-    const task = TASKS.find((t) => t.id === taskId);
-    return {
-      name: task?.name || taskId,
-      emoji: TASK_EMOJIS[taskId] || '📋',
-    };
-  };
-
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
       <div className="mb-3">
@@ -78,7 +50,7 @@ export default function DailyTasks({
         </h3>
         {selectedUserId && (
           <p className="text-xs text-gray-500 mt-1">
-            {getUserName(selectedUserId)}님의 업무만 표시
+            {getUserName(selectedUserId, users)}님의 업무만 표시
           </p>
         )}
       </div>
@@ -92,7 +64,7 @@ export default function DailyTasks({
         <div className="space-y-3">
           {filteredAssignments.map((assignment) => {
             const taskInfo = getTaskInfo(assignment.taskId);
-            const userName = getUserName(assignment.userId);
+            const userName = getUserName(assignment.userId, users);
 
             return (
               <div
