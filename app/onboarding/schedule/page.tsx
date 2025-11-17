@@ -1,52 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import ScheduleEditor from '@/components/schedule/ScheduleEditor';
+import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { saveSchedule, getMySchedule } from '@/lib/api/client';
-import type { WeeklySchedule, DayOfWeek, HourlySchedule } from '@/types';
-
-/**
- * 빈 스케줄 생성
- */
-const createEmptySchedule = (): WeeklySchedule => {
-  const days: DayOfWeek[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-  const schedule = {} as WeeklySchedule;
-
-  days.forEach((day) => {
-    const hours: HourlySchedule = {};
-    for (let i = 0; i < 24; i++) {
-      hours[i] = null;
-    }
-    schedule[day] = hours;
-  });
-
-  return schedule;
-};
+import { createEmptySchedule } from '@/lib/utils/scheduleHelpers';
+import { useApiData } from '@/hooks/useApiData';
+import type { WeeklySchedule } from '@/types';
 
 export default function OnboardingSchedulePage() {
   const router = useRouter();
 
-  const [schedule, setSchedule] = useState<WeeklySchedule | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const loadSchedule = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getMySchedule();
-        setSchedule(data);
-      } catch (error) {
-        console.error('스케줄 로드 실패:', error);
+  const { data: schedule, isLoading, setData: setSchedule } = useApiData(
+    getMySchedule,
+    {
+      onError: () => {
         setSchedule(createEmptySchedule());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadSchedule();
-  }, []);
+      },
+    }
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * 저장 및 다음 단계로 이동
@@ -77,17 +52,14 @@ export default function OnboardingSchedulePage() {
 
   if (isLoading || !schedule) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">스케줄을 불러오는 중...</p>
-        </div>
+      <div className="page-container-full flex items-center justify-center">
+        <MainLoadingSpinner text="스케줄을 불러오는 중..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8">
+    <div className="page-container">
       <div className="max-w-5xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-6">

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useApiData } from '@/hooks/useApiData';
 import { TASKS } from '@/types';
 import {
   getMyPreference,
@@ -15,7 +16,7 @@ import {
   getCurrentUser,
   getMyRoom,
 } from '@/lib/api/client';
-import type { Preference, User } from '@/types';
+import type { Preference, User, Room } from '@/types';
 
 /**
  * 업무 배정 페이지
@@ -25,6 +26,14 @@ import type { Preference, User } from '@/types';
  * - 중복 선택 방지
  */
 
+interface AssignPageData {
+  currentUser: User | null;
+  room: Room | null;
+  roomMembers: User[];
+  roomPreferences: Preference[];
+  existingPreference: Preference | null;
+}
+
 export default function AssignPage() {
   const router = useRouter();
 
@@ -32,56 +41,48 @@ export default function AssignPage() {
   const [first, setFirst] = useState('');
   const [second, setSecond] = useState('');
 
-  // 기존 선호도
-  const [existingPreference, setExistingPreference] = useState<Preference | null>(null);
-
-  // 룸메 데이터
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [roomMembers, setRoomMembers] = useState<User[]>([]);
-  const [roomPreferences, setRoomPreferences] = useState<Preference[]>([]);
-
   // UI 상태
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ first?: string; second?: string }>({});
 
   /**
    * 초기 데이터 로드
    */
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [user, room, preference] = await Promise.all([
-          getCurrentUser(),
-          getMyRoom(),
-          getMyPreference(),
-        ]);
+  const loadAssignData = useCallback(async (): Promise<AssignPageData> => {
+    const [user, room, preference] = await Promise.all([
+      getCurrentUser(),
+      getMyRoom(),
+      getMyPreference(),
+    ]);
 
-        setCurrentUser(user);
+    let members: User[] = [];
+    let preferences: Preference[] = [];
 
-        if (room) {
-          const [members, preferences] = await Promise.all([
-            getRoomMembers(room.id),
-            getRoomPreferences(room.id),
-          ]);
-          setRoomMembers(members);
-          setRoomPreferences(preferences);
-        }
+    if (room) {
+      [members, preferences] = await Promise.all([
+        getRoomMembers(room.id),
+        getRoomPreferences(room.id),
+      ]);
+    }
 
-        if (preference) {
-          setExistingPreference(preference);
-          setFirst(preference.first);
-          setSecond(preference.second);
-        }
-      } catch (error) {
-        console.error('데이터 로드 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    return {
+      currentUser: user,
+      room,
+      roomMembers: members,
+      roomPreferences: preferences,
+      existingPreference: preference,
     };
-
-    loadData();
   }, []);
+
+  const { data, isLoading } = useApiData(loadAssignData);
+
+  // 기존 선호도가 있으면 초기값 설정
+  useEffect(() => {
+    if (data?.existingPreference) {
+      setFirst(data.existingPreference.first);
+      setSecond(data.existingPreference.second);
+    }
+  }, [data]);
 
   /**
    * 마감 시간 계산 (다음 일요일 23:59:59)
@@ -166,8 +167,18 @@ export default function AssignPage() {
     label: task.name,
   }));
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <MainLoadingSpinner text="불러오는 중..." />;
+  }
+
+  const { currentUser, roomMembers, roomPreferences, existingPreference } = data;
+
+  if (!currentUser) {
+    return (
+      <div className="page-container flex items-center justify-center">
+        <p className="text-gray-600">사용자 정보를 불러올 수 없습니다.</p>
+      </div>
+    );
   }
 
   return (

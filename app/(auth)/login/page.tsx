@@ -10,7 +10,7 @@ import Card from '@/components/ui/Card';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 px-4">
+    <div className="page-container-full flex items-center justify-center">
       <div className="w-full max-w-md">
         {/* 로고 및 타이틀 */}
         <div className="text-center mb-8">

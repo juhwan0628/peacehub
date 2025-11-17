@@ -9,8 +9,8 @@ import {
   TASKS,
 } from '@/lib/api/mockData';
 import { DAY_NAMES } from '@/types';
-import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
-import { formatTimeRange } from '@/lib/constants/taskTimes';
+import { TASK_EMOJIS, formatTimeRange } from '@/lib/constants/tasks';
+import { formatDateDots } from '@/lib/utils/dateHelpers';
 import type { Assignment, DayOfWeek, TimeRange } from '@/types';
 
 interface UserAssignment {
@@ -24,14 +24,6 @@ interface UserAssignment {
     timeRange?: TimeRange;
   }[];
 }
-
-// Helper to get the start of the current week (Monday)
-const getWeekStart = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(d.setDate(diff));
-};
 
 export default function ResultPage() {
   const [assignmentsByUser, setAssignmentsByUser] = useState<UserAssignment[]>([]);
@@ -49,8 +41,7 @@ export default function ResultPage() {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
 
-    const formatDate = (d: Date) => `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
-    setWeek({ start: formatDate(weekStart), end: formatDate(weekEnd) });
+    setWeek({ start: formatDateDots(weekStart), end: formatDateDots(weekEnd) });
 
     const currentWeekAssignments = mockAssignments.filter(
       (a) => a.weekStart === mostRecentWeekStart

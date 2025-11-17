@@ -104,7 +104,7 @@ export default function ProfilePage() {
   }));
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8">
+    <div className="page-container-full flex items-center justify-center">
       <div className="w-full max-w-lg">
         {/* 헤더 */}
         <div className="text-center mb-6">
