@@ -143,7 +143,7 @@ export async function getMySchedule(): Promise<WeeklySchedule> {
  */
 export async function saveSchedule(schedule: WeeklySchedule): Promise<void> {
   await delay(500);
-  console.log('스케줄 저장됨:', schedule);
+  // Mock: 실제로는 백엔드에 저장
 }
 
 /**
@@ -189,7 +189,7 @@ export async function getMyPreference(): Promise<Preference | null> {
  */
 export async function savePreference(first: string, second: string): Promise<void> {
   await delay(500);
-  console.log('선호도 저장됨:', { first, second });
+  // Mock: 실제로는 백엔드에 저장
 }
 
 /**

@@ -9,8 +9,7 @@ import {
   TASKS,
 } from '@/lib/api/mockData';
 import { DAY_NAMES } from '@/types';
-import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
-import { formatTimeRange } from '@/lib/constants/taskTimes';
+import { TASK_EMOJIS, formatTimeRange } from '@/lib/constants/tasks';
 import type { Assignment, DayOfWeek, TimeRange } from '@/types';
 
 interface UserAssignment {

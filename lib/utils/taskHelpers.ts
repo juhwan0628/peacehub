@@ -1,5 +1,5 @@
 import { TASKS } from '@/types';
-import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
+import { TASK_EMOJIS } from '@/lib/constants/tasks';
 import type { User, Task } from '@/types';
 
 /**

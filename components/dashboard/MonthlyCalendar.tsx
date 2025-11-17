@@ -2,7 +2,7 @@
 
 import type { Assignment, DayOfWeek } from '@/types';
 import { TASKS } from '@/types';
-import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
+import { TASK_EMOJIS } from '@/lib/constants/tasks';
 
 /**
  * 월간 캘린더 컴포넌트

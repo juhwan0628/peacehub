@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import MonthlyCalendar from '@/components/dashboard/MonthlyCalendar';
 import CombinedTimelineBar from '@/components/dashboard/CombinedTimelineBar';
 import TimelineBar from '@/components/dashboard/TimelineBar';
@@ -12,64 +12,51 @@ import {
   getCurrentAssignments,
   getAllSchedules,
 } from '@/lib/api/client';
+import { useApiData, useParallelApiData } from '@/hooks/useApiData';
 
 /**
  * 대시보드 페이지
  *
  * 월간 캘린더 + 통합 타임라인 + 개인 타임라인
  */
-
 export default function DashboardPage() {
-  // 상태
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [allSchedules, setAllSchedules] = useState<Map<string, WeeklySchedule>>(new Map());
-
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 스크롤 타겟 ref
   const detailsRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * 초기 데이터 로드
-   */
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [user, members, assignmentsData] = await Promise.all([
-          getCurrentUser(),
-          getRoomMembers('room-1'),
-          getCurrentAssignments(),
-        ]);
+  // 1. Fetch primary data in parallel
+  const getRoomMembersCallback = useCallback(() => getRoomMembers('room-1'), []);
+  const apiFunctions = useMemo(() => [
+    getCurrentUser,
+    getRoomMembersCallback,
+    getCurrentAssignments,
+  ], [getRoomMembersCallback]);
 
-        setCurrentUser(user);
-        setUsers(members);
-        setAssignments(assignmentsData);
+  const { data: parallelData, isLoading: isLoadingParallel, error: parallelError } = useParallelApiData(apiFunctions);
+  const currentUser = (parallelData?.[0] as User | null) || null;
+  const users = (parallelData?.[1] as User[]) || [];
+  const assignments = (parallelData?.[2] as Assignment[]) || [];
 
-        // 모든 사용자의 스케줄 가져오기
-        const userIds = members.map(u => u.id);
-        const schedules = await getAllSchedules(userIds);
-        setAllSchedules(schedules);
-      } catch (error) {
-        console.error('데이터 로드 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // 2. Fetch schedules once users are loaded
+  const getAllSchedulesCallback = useCallback(async () => {
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      return new Map<string, WeeklySchedule>();
+    }
+    const userIds = users.map(u => u.id);
+    return getAllSchedules(userIds);
+  }, [users]);
 
-    loadData();
-  }, []);
+  const { data: allSchedules, isLoading: isLoadingSchedules, error: schedulesError } = useApiData(
+    getAllSchedulesCallback,
+    { autoFetch: !!users && Array.isArray(users) && users.length > 0 }
+  );
 
-  /**
-   * 날짜 클릭 핸들러 (스크롤 포함)
-   */
+  const isLoading = isLoadingParallel || isLoadingSchedules;
+  const error = parallelError || schedulesError;
+
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    // 부드러운 스크롤
     setTimeout(() => {
       detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -79,18 +66,17 @@ export default function DashboardPage() {
     return <MainLoadingSpinner text="대시보드를 불러오는 중..." />;
   }
 
-  if (!currentUser) {
+  if (error || !currentUser) {
     return (
       <div className="page-container flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
+          <p className="text-gray-600">데이터를 불러올 수 없습니다: {error?.message}</p>
         </div>
       </div>
     );
   }
 
-  // 현재 사용자의 스케줄
-  const mySchedule = allSchedules.get(currentUser.id);
+  const mySchedule = allSchedules?.get(currentUser.id);
 
   return (
     <div className="page-container">
@@ -110,7 +96,7 @@ export default function DashboardPage() {
           <MonthlyCalendar
             currentMonth={currentMonth}
             selectedDate={selectedDate}
-            assignments={assignments}
+            assignments={assignments || []}
             selectedUserId={null}
             onDateClick={handleDateClick}
             onMonthChange={setCurrentMonth}
@@ -126,19 +112,21 @@ export default function DashboardPage() {
           </div>
 
           {/* 통합 타임라인 (모두) */}
-          <CombinedTimelineBar
-            date={selectedDate}
-            allSchedules={allSchedules}
-            assignments={assignments}
-            users={users}
-          />
+          {allSchedules && users && (
+            <CombinedTimelineBar
+              date={selectedDate}
+              allSchedules={allSchedules}
+              assignments={assignments || []}
+              users={users}
+            />
+          )}
 
           {/* 개인 타임라인 (나) */}
           {mySchedule && (
             <TimelineBar
               date={selectedDate}
               schedule={mySchedule}
-              assignments={assignments}
+              assignments={assignments || []}
               userId={currentUser.id}
             />
           )}
