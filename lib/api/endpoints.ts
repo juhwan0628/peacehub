@@ -154,8 +154,8 @@ export async function getCurrentUser(): Promise<User | null> {
     return {
       id: response.id,
       email: response.email,
-      profileImage: response.picture,
-      realName: response.realName || '',
+      profileImage: response.picture || '', // Google OAuth에서 제공될 수 있음
+      realName: response.realName || response.name || '', // realName이 없으면 name 사용
       country: response.country || '',
       language: response.language || '',
       roomId: response.roomId ?? undefined,
@@ -186,8 +186,8 @@ export async function updateProfile(data: {
   return {
     id: response.id,
     email: response.email,
-    profileImage: response.picture,
-    realName: response.realName || '',
+    profileImage: response.picture || '', // Google OAuth에서 제공될 수 있음
+    realName: response.realName || response.name || '', // realName이 없으면 name 사용
     country: response.country || '',
     language: response.language || '',
     roomId: response.roomId ?? undefined,
@@ -265,8 +265,8 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
   return response.map(user => ({
     id: user.id,
     email: user.email,
-    profileImage: user.picture,
-    realName: user.realName || '',
+    profileImage: user.picture || '', // Google OAuth에서 제공될 수 있음
+    realName: user.realName || user.name || '', // realName이 없으면 name 사용
     country: user.country || '',
     language: user.language || '',
     roomId: user.roomId ?? undefined,
