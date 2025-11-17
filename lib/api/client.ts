@@ -212,6 +212,10 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
  * 백엔드 연동 시: GET /schedules/my
  */
 export async function getMySchedule(): Promise<WeeklySchedule> {
+  if (USE_REAL_SCHEDULE) {
+    return await endpoints.getMySchedule();
+  }
+  // Mock
   await delay(300);
   return mockWeeklySchedule;
 }
@@ -221,8 +225,11 @@ export async function getMySchedule(): Promise<WeeklySchedule> {
  * 백엔드 연동 시: PUT /schedules/my
  */
 export async function saveSchedule(schedule: WeeklySchedule): Promise<void> {
-  await delay(500);
+  if (USE_REAL_SCHEDULE) {
+    return await endpoints.saveSchedule(schedule);
+  }
   // Mock: 실제로는 백엔드에 저장
+  await delay(500);
 }
 
 /**
@@ -230,6 +237,17 @@ export async function saveSchedule(schedule: WeeklySchedule): Promise<void> {
  * 백엔드 연동 시: GET /schedules?userIds=id1,id2,...
  */
 export async function getAllSchedules(userIds: string[]): Promise<Map<string, WeeklySchedule>> {
+  if (USE_REAL_SCHEDULE) {
+    // Real API는 userIds 파라미터 없이 room의 모든 멤버 스케줄 반환
+    const schedules = await endpoints.getAllSchedules();
+    // Record를 Map으로 변환
+    const result = new Map<string, WeeklySchedule>();
+    Object.entries(schedules).forEach(([userId, schedule]) => {
+      result.set(userId, schedule);
+    });
+    return result;
+  }
+  // Mock
   await delay(300);
   const result = new Map<string, WeeklySchedule>();
   userIds.forEach(id => {
