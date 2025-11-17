@@ -127,12 +127,19 @@ export interface Preference {
 // 업무 배정 관련 타입
 // ============================================
 
+// 시간 범위 (0-23시)
+export interface TimeRange {
+  start: number; // 시작 시간 (0-23)
+  end: number; // 종료 시간 (0-23)
+}
+
 export interface Assignment {
   id: string;
   userId: string;
   roomId: string;
   taskId: string;
   days: DayOfWeek[]; // 배정된 요일들
+  timeRange?: TimeRange; // 업무 수행 시간대
   weekStart: string; // 주의 시작 날짜 (ISO string)
   createdAt: string;
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { TASKS } from '@/types';
 import {
   getMyPreference,
@@ -166,18 +167,11 @@ export default function AssignPage() {
   }));
 
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">불러오는 중...</p>
-        </div>
-      </div>
-    );
+    return <MainLoadingSpinner text="불러오는 중..." />;
   }
 
   return (
-    <div className="bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8 min-h-[calc(100vh-4rem)]">
+    <div className="page-container">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="text-center">

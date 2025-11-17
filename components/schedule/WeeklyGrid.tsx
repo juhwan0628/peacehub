@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import type { WeeklySchedule, DayOfWeek, TimeSlot } from '@/types';
 import { DAY_NAMES } from '@/types';
+import { TimeLabels, TimelineRow, TimelineLegend, scheduleToHourlyBlocks } from '@/components/common/TimelineRenderer';
 
 /**
- * 주간 타임테이블 그리드 컴포넌트
+ * 주간 타임테이블 그리드 컴포넌트 (개선됨)
  *
- * TimelineBar 스타일의 가로 배열 디자인
+ * TimelineRenderer를 사용하여 재사용성 향상
+ * globals.css의 timeline 클래스 활용
  * - 토글 로직: 같은 색 클릭 시 지우기, 다른 색 클릭 시 덮어쓰기
  * - 2가지 상태: 조용시간, 외출
  */
@@ -16,12 +18,6 @@ interface WeeklyGridProps {
   schedule: WeeklySchedule;
   onChange: (schedule: WeeklySchedule) => void;
 }
-
-// 시간대 색상 매핑 (TimelineBar와 통일)
-const SLOT_COLORS: Record<NonNullable<TimeSlot>, string> = {
-  quiet: 'bg-gray-600',
-  out: 'bg-red-400',
-};
 
 // 시간대 라벨
 const SLOT_LABELS: Record<NonNullable<TimeSlot>, string> = {
@@ -128,49 +124,30 @@ export default function WeeklyGrid({ schedule, onChange }: WeeklyGridProps) {
   };
 
   /**
-   * 시간 라벨 렌더링 (2시간 간격)
+   * 요일별 셀 클릭 핸들러 (블록 기반)
    */
-  const renderTimeLabels = () => {
-    const labels = [];
-    for (let hour = 0; hour < 24; hour += 2) {
-      labels.push(
-        <div key={hour} className="flex-[2] text-center text-xs text-gray-600">
-          {hour}
-        </div>
-      );
-    }
-    return labels;
+  const handleCellClickForDay = (day: DayOfWeek) => (hour: number) => {
+    handleCellClick(day, hour);
   };
 
   /**
-   * 요일별 타임라인 렌더링
+   * 요일별 마우스 다운 핸들러
    */
-  const renderDayTimeline = (day: DayOfWeek) => {
-    const blocks = [];
-    const daySchedule = schedule[day];
+  const handleCellMouseDownForDay = (day: DayOfWeek) => (hour: number) => {
+    handleMouseDown(day, hour);
+  };
 
-    for (let hour = 0; hour < 24; hour++) {
-      const slotType = daySchedule?.[hour];
-      const colorClass = slotType ? SLOT_COLORS[slotType] : 'bg-gray-100';
-
-      blocks.push(
-        <div
-          key={hour}
-          onMouseDown={() => handleMouseDown(day, hour)}
-          onMouseEnter={() => handleMouseEnter(day, hour)}
-          className={`flex-1 h-10 ${colorClass} border-r border-white cursor-pointer transition-opacity hover:opacity-80`}
-          title={`${DAY_NAMES[day]} ${hour}시 - ${slotType ? SLOT_LABELS[slotType] : '비는 시간'}`}
-        />
-      );
-    }
-
-    return blocks;
+  /**
+   * 요일별 마우스 엔터 핸들러
+   */
+  const handleCellMouseEnterForDay = (day: DayOfWeek) => (hour: number) => {
+    handleMouseEnter(day, hour);
   };
 
   return (
     <div className="space-y-6" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
       {/* Paint 모드 선택 툴바 */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="card-compact">
         <p className="text-sm font-medium text-gray-700 mb-3">
           상태 선택 (클릭/드래그로 시간대 선택, 같은 색 클릭 시 지우기)
         </p>
@@ -185,53 +162,51 @@ export default function WeeklyGrid({ schedule, onChange }: WeeklyGridProps) {
                   : ''
               }`}
             >
-              <div className={`w-6 h-6 ${SLOT_COLORS[mode]} rounded`}></div>
+              <div className={`w-6 h-6 time-slot-${mode} rounded`}></div>
               <span className="text-gray-800">{SLOT_LABELS[mode]}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* 타임테이블 그리드 (TimelineBar 스타일) */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      {/* 타임테이블 그리드 (TimelineRenderer 사용) */}
+      <div className="timeline-container">
         <div className="space-y-4">
-          {/* 시간 라벨 */}
-          <div className="flex pl-12">
-            {renderTimeLabels()}
-          </div>
+          {/* 시간 라벨 (개선: 블록 왼쪽 정렬) */}
+          <TimeLabels interval={2} showZero />
 
           {/* 요일별 타임라인 */}
-          {days.map((day) => (
-            <div key={day} className="flex items-center gap-2">
-              {/* 요일 라벨 */}
-              <div className="w-10 text-sm font-bold text-gray-700 text-center">
-                {DAY_NAMES[day]}
-              </div>
-
-              {/* 타임라인 바 */}
-              <div className="flex-1 flex rounded overflow-hidden border border-gray-300">
-                {renderDayTimeline(day)}
-              </div>
-            </div>
-          ))}
+          {days.map((day) => {
+            const blocks = scheduleToHourlyBlocks(schedule[day]);
+            return (
+              <TimelineRow
+                key={day}
+                label={DAY_NAMES[day]}
+                blocks={blocks}
+                onCellMouseDown={handleCellMouseDownForDay(day)}
+                onCellMouseEnter={handleCellMouseEnterForDay(day)}
+                readOnly={false}
+              />
+            );
+          })}
         </div>
       </div>
 
       {/* 빠른 설정 */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="card-compact">
         <p className="text-sm font-medium text-gray-700 mb-3">빠른 설정</p>
 
         {/* 일괄 적용 버튼 */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={handleApplyWeekdays}
-            className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-medium"
+            className="flex-1 btn-sm bg-blue-100 text-blue-700 hover:bg-blue-200"
           >
             월요일 → 평일 전체 적용
           </button>
           <button
             onClick={handleApplyWeekend}
-            className="flex-1 px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg text-sm font-medium"
+            className="flex-1 btn-sm bg-purple-100 text-purple-700 hover:bg-purple-200"
           >
             토요일 → 일요일 적용
           </button>

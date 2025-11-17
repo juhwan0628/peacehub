@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import type { WeeklySchedule, Assignment, DayOfWeek, User, TimeSlot } from '@/types';
+import { TimeLabels } from '@/components/common/TimelineRenderer';
+import { getDayOfWeek, getWeekStart } from '@/lib/utils/dateHelpers';
+import { getUserName } from '@/lib/utils/taskHelpers';
 
 /**
- * 통합 타임라인 바 컴포넌트
+ * 통합 타임라인 바 컴포넌트 (개선됨)
  *
  * 모든 멤버의 스케줄을 겹쳐서 표시
+ * globals.css와 유틸리티 함수 활용
  * - 겹침 수에 따라 채도 조절
  * - 호버 시 상세 정보 표시
  */
@@ -49,21 +53,15 @@ export default function CombinedTimelineBar({
   const [hoveredHour, setHoveredHour] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
-  // 날짜에서 요일 추출
-  const dayOfWeek: DayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][
-    date.getDay()
-  ] as DayOfWeek;
+  // 날짜에서 요일 추출 (유틸 함수 사용)
+  const dayOfWeek = getDayOfWeek(date);
 
   // 해당 날짜의 업무 배정 가져오기
   const getAssignmentsForDate = (): Map<string, string[]> => {
     const result = new Map<string, string[]>();
 
-    // 주의 시작일 계산
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setDate(diff);
-    const weekStart = d.toISOString().split('T')[0];
+    // 주의 시작일 계산 (유틸 함수 사용)
+    const weekStart = getWeekStart(date);
 
     assignments
       .filter(a => a.weekStart === weekStart && a.days.includes(dayOfWeek))
@@ -122,23 +120,10 @@ export default function CombinedTimelineBar({
 
   const overlaps = calculateOverlaps();
 
-  // 시간 라벨 렌더링
-  const renderTimeLabels = () => {
-    const labels = [];
-    for (let hour = 0; hour < 24; hour += 2) {
-      labels.push(
-        <div key={hour} className="flex-[2] text-center text-xs text-gray-600">
-          {hour}
-        </div>
-      );
-    }
-    return labels;
-  };
-
-  // 사용자 이름 가져오기
+  // 사용자 이름 가져오기 (유틸 함수 사용)
   const getUserNames = (userIds: string[]): string => {
     return userIds
-      .map(id => users.find(u => u.id === id)?.realName || '알 수 없음')
+      .map(id => getUserName(id, users))
       .join(', ');
   };
 
@@ -208,7 +193,7 @@ export default function CombinedTimelineBar({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <div className="card-compact">
       <div className="mb-3">
         <h3 className="text-sm font-semibold text-gray-800">
           👥 우리 모두의 타임테이블
@@ -218,8 +203,10 @@ export default function CombinedTimelineBar({
         </p>
       </div>
 
-      {/* 시간 라벨 */}
-      <div className="flex mb-1">{renderTimeLabels()}</div>
+      {/* 시간 라벨 (개선: 블록 왼쪽 정렬) */}
+      <div className="mb-1">
+        <TimeLabels interval={2} showZero leftPadding="" />
+      </div>
 
       {/* 타임라인 바 */}
       <div className="flex rounded overflow-hidden border border-gray-300">
@@ -229,15 +216,15 @@ export default function CombinedTimelineBar({
       {/* 범례 */}
       <div className="mt-3 flex gap-4 flex-wrap text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-gray-600 rounded"></div>
+          <div className="w-4 h-4 time-slot-quiet rounded"></div>
           <span className="text-gray-700">조용시간</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <div className="w-4 h-4 time-slot-task rounded"></div>
           <span className="text-gray-700">업무</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-gray-100 rounded border border-gray-300"></div>
+          <div className="w-4 h-4 time-slot-free rounded border border-gray-300"></div>
           <span className="text-gray-700">비는 시간</span>
         </div>
       </div>

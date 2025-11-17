@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import MonthlyCalendar from '@/components/dashboard/MonthlyCalendar';
 import CombinedTimelineBar from '@/components/dashboard/CombinedTimelineBar';
 import TimelineBar from '@/components/dashboard/TimelineBar';
+import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import type { User, Assignment, WeeklySchedule } from '@/types';
 import {
   getCurrentUser,
@@ -75,19 +76,12 @@ export default function DashboardPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">대시보드를 불러오는 중...</p>
-        </div>
-      </div>
-    );
+    return <MainLoadingSpinner text="대시보드를 불러오는 중..." />;
   }
 
   if (!currentUser) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="page-container flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
         </div>
@@ -99,7 +93,7 @@ export default function DashboardPage() {
   const mySchedule = allSchedules.get(currentUser.id);
 
   return (
-    <div className="bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8 min-h-[calc(100vh-4rem)]">
+    <div className="page-container">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* 헤더 */}
         <div className="text-center">

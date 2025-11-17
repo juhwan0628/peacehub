@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
+import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import {
   mockUsers,
   mockAssignments,
   TASKS,
 } from '@/lib/api/mockData';
 import { DAY_NAMES } from '@/types';
-import type { Assignment, DayOfWeek } from '@/types';
+import { TASK_EMOJIS } from '@/lib/constants/taskEmojis';
+import { formatTimeRange } from '@/lib/constants/taskTimes';
+import type { Assignment, DayOfWeek, TimeRange } from '@/types';
 
 interface UserAssignment {
   userId: string;
@@ -18,6 +21,7 @@ interface UserAssignment {
     taskId: string;
     taskName: string;
     days: DayOfWeek[];
+    timeRange?: TimeRange;
   }[];
 }
 
@@ -33,6 +37,7 @@ export default function ResultPage() {
   const [assignmentsByUser, setAssignmentsByUser] = useState<UserAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [week, setWeek] = useState({ start: '', end: '' });
+  const [totalTasks, setTotalTasks] = useState(0);
 
   useEffect(() => {
     // For prototype, we'll find the most recent week from mock data
@@ -50,6 +55,8 @@ export default function ResultPage() {
     const currentWeekAssignments = mockAssignments.filter(
       (a) => a.weekStart === mostRecentWeekStart
     );
+
+    setTotalTasks(currentWeekAssignments.length);
 
     const groupedAssignments: { [userId: string]: UserAssignment } = {};
 
@@ -70,6 +77,7 @@ export default function ResultPage() {
             taskId: task.id,
             taskName: task.name,
             days: assignment.days,
+            timeRange: assignment.timeRange,
           });
         }
       }
@@ -80,26 +88,22 @@ export default function ResultPage() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">결과를 불러오는 중...</p>
-        </div>
-      </div>
-    );
+    return <MainLoadingSpinner text="결과를 불러오는 중..." />;
   }
 
   return (
-    <div className="bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8 min-h-[calc(100vh-4rem)]">
+    <div className="page-container">
       <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-700 mb-2">
             주간 업무 배정 결과
           </h1>
-          <p className="text-gray-600 text-lg">
-            {week.start} ~ {week.end}
+          <p className="text-gray-600 text-lg mb-2">
+            📅 {week.start} ~ {week.end}
+          </p>
+          <p className="text-primary-600 font-semibold">
+            이번 주 총 {totalTasks}개 업무 배정
           </p>
         </div>
 
@@ -107,32 +111,54 @@ export default function ResultPage() {
         <div className="space-y-6">
           {assignmentsByUser.map((userAssignment) => (
             <Card key={userAssignment.userId} padding="lg">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-6">
                 <img
                   src={userAssignment.profileImage}
                   alt={userAssignment.userName}
-                  className="w-16 h-16 rounded-full border-2 border-gray-200"
+                  className="w-20 h-20 rounded-full border-4 border-primary-100 shadow-md"
                 />
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-gray-800">
-                    {userAssignment.userName}
-                  </h2>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {userAssignment.userName}
+                    </h2>
+                    <span className="px-3 py-1 bg-primary-600 text-white text-sm font-semibold rounded-full">
+                      {userAssignment.tasks.length}개 업무
+                    </span>
+                  </div>
                   {userAssignment.tasks.length > 0 ? (
-                    <div className="mt-3 space-y-3">
-                      {userAssignment.tasks.map((task) => (
-                        <div key={task.taskId} className="p-3 bg-gray-50 rounded-lg">
-                          <p className="font-semibold text-gray-700">
-                            {task.taskName}
-                          </p>
-                          <div className="flex gap-2 mt-1.5">
+                    <div className="space-y-4">
+                      {userAssignment.tasks.map((task, index) => (
+                        <div
+                          key={`${task.taskId}-${index}`}
+                          className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border-l-4 border-primary-500 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">
+                              {TASK_EMOJIS[task.taskId] || '📋'}
+                            </span>
+                            <p className="font-bold text-gray-800 text-lg">
+                              {task.taskName}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
                             {task.days.map((day) => (
                               <span
                                 key={day}
-                                className="px-2.5 py-1 bg-primary-100 text-primary-700 text-xs font-semibold rounded-full"
+                                className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-semibold rounded-full"
                               >
                                 {DAY_NAMES[day]}
                               </span>
                             ))}
+                            {task.timeRange && (
+                              <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full flex items-center gap-1">
+                                🕐{' '}
+                                {formatTimeRange(
+                                  task.timeRange.start,
+                                  task.timeRange.end
+                                )}
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -149,7 +175,9 @@ export default function ResultPage() {
         </div>
 
         <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">매주 월요일 자정에 새로운 업무가 배정됩니다.</p>
+          <p className="text-sm text-gray-500">
+            매주 월요일 자정에 새로운 업무가 배정됩니다.
+          </p>
         </div>
       </div>
     </div>
