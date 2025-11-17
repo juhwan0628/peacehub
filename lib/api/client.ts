@@ -29,6 +29,7 @@ import {
   TASKS,
 } from './mockData';
 import * as endpoints from './endpoints';
+import { saveUserLocalData, getUserLocalData } from '@/lib/utils/userStorage';
 
 // 백엔드 API URL
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
@@ -63,7 +64,18 @@ export async function getGoogleAuthUrl(): Promise<string> {
 export async function getCurrentUser(): Promise<User | null> {
   if (USE_REAL_USER) {
     try {
-      return await endpoints.getCurrentUser();
+      const user = await endpoints.getCurrentUser();
+
+      if (user) {
+        // localStorage에서 추가 정보 조회 (country, language)
+        const localData = getUserLocalData(user.id);
+        if (localData) {
+          user.country = localData.country;
+          user.language = localData.language;
+        }
+      }
+
+      return user;
     } catch (error) {
       if (error instanceof Error && error.message === 'need login') {
         return null;
@@ -96,13 +108,37 @@ export async function logout(): Promise<void> {
 
 /**
  * 프로필 정보 업데이트 (실명, 국가, 언어)
- * 백엔드 연동 시: PATCH /users/me
+ * 백엔드 연동 시: PUT /users
  */
 export async function updateProfile(data: {
   realName: string;
   country: string;
   language: string;
 }): Promise<User> {
+  if (USE_REAL_USER) {
+    try {
+      // 백엔드에 realName만 업데이트 (country, language는 아직 미지원)
+      const user = await endpoints.updateProfile(data);
+
+      // country, language는 localStorage에 저장
+      saveUserLocalData(user.id, {
+        country: data.country,
+        language: data.language,
+      });
+
+      // 반환 시 localStorage 데이터 포함
+      return {
+        ...user,
+        country: data.country,
+        language: data.language,
+      };
+    } catch (error) {
+      console.error('Profile update failed:', error);
+      throw error;
+    }
+  }
+
+  // Mock
   await delay(500);
   return { ...currentUser, ...data };
 }

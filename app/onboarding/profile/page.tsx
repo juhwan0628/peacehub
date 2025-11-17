@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
+import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { COUNTRIES, LANGUAGES } from '@/types';
-import { updateProfile } from '@/lib/api/client';
+import { updateProfile, getCurrentUser } from '@/lib/api/client';
 
 /**
  * 프로필 설정 페이지
@@ -34,7 +35,39 @@ export default function ProfilePage() {
   }>({});
 
   // 로딩 상태
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * 페이지 로드 시 현재 사용자 정보 확인
+   * 이미 프로필이 설정되어 있으면 다음 단계로 스킵
+   */
+  useEffect(() => {
+    const checkProfile = async () => {
+      try {
+        const user = await getCurrentUser();
+
+        if (user) {
+          // 프로필이 완전히 설정되어 있으면 다음 단계로
+          if (user.realName && user.country && user.language) {
+            router.push('/onboarding/join-room');
+            return;
+          }
+
+          // 부분적으로 설정되어 있으면 폼에 채우기
+          if (user.realName) setRealName(user.realName);
+          if (user.country) setCountry(user.country);
+          if (user.language) setLanguage(user.language);
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkProfile();
+  }, [router]);
 
   /**
    * 폼 유효성 검사
@@ -102,6 +135,11 @@ export default function ProfilePage() {
     value: l.code,
     label: l.name,
   }));
+
+  // 로딩 중
+  if (isLoading) {
+    return <MainLoadingSpinner text="프로필 정보를 불러오는 중..." />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 px-4 py-8">
