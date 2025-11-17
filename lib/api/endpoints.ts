@@ -154,12 +154,12 @@ export async function getCurrentUser(): Promise<User | null> {
     return {
       id: response.id,
       email: response.email,
-      name: response.name,
-      picture: response.picture,
+      profileImage: response.picture,
       realName: response.realName || '',
       country: response.country || '',
       language: response.language || '',
-      roomId: response.roomId || null,
+      roomId: response.roomId ?? undefined,
+      createdAt: response.createdAt,
     };
   } catch (error) {
     // 401 에러는 로그인 페이지로 리디렉션
@@ -186,12 +186,12 @@ export async function updateProfile(data: {
   return {
     id: response.id,
     email: response.email,
-    name: response.name,
-    picture: response.picture,
+    profileImage: response.picture,
     realName: response.realName || '',
     country: response.country || '',
     language: response.language || '',
-    roomId: response.roomId || null,
+    roomId: response.roomId ?? undefined,
+    createdAt: response.createdAt,
   };
 }
 
@@ -210,6 +210,8 @@ export async function createRoom(name: string): Promise<Room> {
     name: response.name,
     code: response.inviteCode,
     ownerId: response.ownerId,
+    memberIds: [], // Backend doesn't provide this, fetch separately via getRoomMembers
+    createdAt: response.createdAt,
   };
 }
 
@@ -226,6 +228,8 @@ export async function joinRoom(inviteCode: string): Promise<Room> {
     name: response.name,
     code: response.inviteCode,
     ownerId: response.ownerId,
+    memberIds: [], // Backend doesn't provide this, fetch separately via getRoomMembers
+    createdAt: response.createdAt,
   };
 }
 
@@ -242,6 +246,8 @@ export async function getMyRoom(): Promise<Room | null> {
       name: response.name,
       code: response.inviteCode,
       ownerId: response.ownerId,
+      memberIds: [], // Backend doesn't provide this, fetch separately via getRoomMembers
+      createdAt: response.createdAt,
     };
   } catch {
     return null;
@@ -259,12 +265,12 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
   return response.map(user => ({
     id: user.id,
     email: user.email,
-    name: user.name,
-    picture: user.picture,
+    profileImage: user.picture,
     realName: user.realName || '',
     country: user.country || '',
     language: user.language || '',
-    roomId: user.roomId || null,
+    roomId: user.roomId ?? undefined,
+    createdAt: user.createdAt,
   }));
 }
 
