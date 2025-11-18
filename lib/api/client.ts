@@ -133,7 +133,24 @@ export async function updateProfile(data: {
         language: data.language,
       };
     } catch (error) {
-      console.error('Profile update failed:', error);
+      console.error('Profile update failed (using fallback):', error);
+
+      // 백엔드 업데이트 실패 시 fallback: localStorage에만 저장
+      const currentUserData = await getCurrentUser();
+      if (currentUserData) {
+        saveUserLocalData(currentUserData.id, {
+          country: data.country,
+          language: data.language,
+        });
+
+        return {
+          ...currentUserData,
+          realName: data.realName,
+          country: data.country,
+          language: data.language,
+        };
+      }
+
       throw error;
     }
   }
@@ -180,12 +197,10 @@ export async function joinRoom(code: string): Promise<Room> {
 /**
  * 내 방 정보 가져오기
  * 백엔드 연동 시: GET /rooms/my
+ * TODO: 백엔드 API 미구현 - Mock 사용 중
  */
 export async function getMyRoom(): Promise<Room | null> {
-  if (USE_REAL_ROOM) {
-    return await endpoints.getMyRoom();
-  }
-  // Mock
+  // 백엔드 API 미구현으로 임시 Mock 사용
   await delay(300);
   return mockRoom;
 }
