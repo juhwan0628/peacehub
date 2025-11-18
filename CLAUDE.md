@@ -329,8 +329,8 @@ useEffect(() => {
 
 - **User Profile**
   - ✅ Get current user (`GET /api/users`)
-  - 🔄 Update profile (`PUT /api/users`) - Mock mode (백엔드 작업 대기 중)
-  - ✅ localStorage for `country`, `language` (temporary)
+  - 🔄 Update profile (`PUT /api/users`) - localStorage 사용 (백엔드 작업 대기 중)
+  - ✅ User 조회는 Real API, country/language는 localStorage에서 병합
 
 - **Room**
   - ✅ Create room (`POST /api/rooms`)
@@ -354,7 +354,7 @@ useEffect(() => {
 # .env.local (Phase 4 완료 - 온보딩 연동 완료)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
 NEXT_PUBLIC_USE_REAL_AUTH=true
-NEXT_PUBLIC_USE_REAL_USER=false
+NEXT_PUBLIC_USE_REAL_USER=true
 NEXT_PUBLIC_USE_REAL_ROOM=true
 NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 ```
