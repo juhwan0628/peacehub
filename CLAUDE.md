@@ -397,7 +397,8 @@ NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 - ✅ **Google OAuth integrated** with real backend
 - ✅ **Session-based authentication** working (connect.sid cookie)
 - ✅ **Protected routes** via `checkAuth` middleware (backend)
-- ✅ **401 auto-redirect** to login page
+- ✅ **401 auto-redirect** to login page (global error handling in `endpoints.ts`)
+- ✅ **Automatic logout on session expiry** - all API calls checked
 - ⚠️ Frontend route protection not implemented (optional for SPA)
 
 ### Client vs Server Components
@@ -459,3 +460,109 @@ Before committing, verify:
 - [ ] No hardcoded colors (use globals.css classes)
 - [ ] TypeScript types properly imported
 - [ ] No console.errors in production code
+
+## Frontend Pages & Routes
+
+### Authentication Pages (`(auth)/`)
+
+- **`/login`** - Google OAuth 로그인 페이지
+  - Google 계정으로 로그인
+  - 성공 시 → `/onboarding/profile`
+
+### Onboarding Pages (`onboarding/`)
+
+온보딩 플로우 (3단계):
+
+1. **`/onboarding/profile`** - 프로필 설정
+   - 실명, 국가, 언어 입력
+   - 다음 → `/onboarding/join-room`
+
+2. **`/onboarding/join-room`** - 방 생성/참여
+   - 새 방 만들기 or 초대 코드로 참여
+   - 다음 → `/onboarding/schedule`
+
+3. **`/onboarding/schedule`** - 초기 타임테이블 설정
+   - 주간 스케줄 작성 (조용시간, 외출시간)
+   - 저장 → `/dashboard`
+   - "나중에 설정" → `/dashboard`
+
+### Main App Pages (`(main)/`)
+
+헤더 + 사이드바 레이아웃 적용:
+
+1. **`/dashboard`** - 대시보드 (홈)
+   - 월간 캘린더 (배정 결과 표시)
+   - 내 타임라인 (선택한 날짜의 스케줄 + 배정된 업무)
+   - 모두의 타임테이블 (룸메이트 전체 스케줄)
+   - 필터: 전체 / 내 업무만
+
+2. **`/schedule`** - 주간 타임테이블 수정
+   - WeeklyGrid 에디터
+   - 조용시간(회색) / 외출(빨강) 설정
+   - 저장 후 → `/dashboard`
+
+3. **`/assign`** - 선호도 제출
+   - 1지망, 2지망 선택 (🚽🗑️🧹👔🍽️)
+   - 마감: 일요일 23:59:59
+   - 제출 후 → `/dashboard`
+
+4. **`/result`** - 배정 결과 조회
+   - 주차별 배정 내역
+   - 업무별 통계
+   - 공평성 점수
+
+### API Callback
+
+- **`/auth/callback`** - Google OAuth 콜백
+  - 자동 리디렉션: → `/onboarding/profile`
+
+### Home
+
+- **`/`** - 루트 페이지
+  - 자동 리디렉션: → `/login`
+
+## Environment Setup
+
+### Required Environment Variables
+
+프로젝트 실행 전 `.env.local` 파일 생성 필요:
+
+```env
+# .env.local (root directory)
+# Backend API URL
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+
+# Feature flags (점진적 통합용)
+NEXT_PUBLIC_USE_REAL_AUTH=true
+NEXT_PUBLIC_USE_REAL_USER=true
+NEXT_PUBLIC_USE_REAL_ROOM=true
+NEXT_PUBLIC_USE_REAL_SCHEDULE=true
+```
+
+**중요**: `.env.local` 파일은 `.gitignore`에 포함되어 GitHub에 올라가지 않습니다.
+각 개발자는 로컬에서 직접 생성해야 합니다.
+
+### Mock Mode로 실행하기
+
+백엔드 없이 Mock 데이터로 실행하려면:
+
+```env
+NEXT_PUBLIC_USE_REAL_AUTH=false
+NEXT_PUBLIC_USE_REAL_USER=false
+NEXT_PUBLIC_USE_REAL_ROOM=false
+NEXT_PUBLIC_USE_REAL_SCHEDULE=false
+```
+
+### 백엔드 서버 실행
+
+프론트엔드와 함께 백엔드 서버도 실행해야 합니다:
+
+```bash
+# 백엔드 서버 (포트 8000)
+cd ../backend
+npm start
+
+# 프론트엔드 서버 (포트 3000)
+cd ../front
+npm run dev
+```

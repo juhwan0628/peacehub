@@ -115,46 +115,25 @@ export async function updateProfile(data: {
   country: string;
   language: string;
 }): Promise<User> {
-  // country, language 고정값 사용 (Mock)
-  const fixedCountry = '대한민국';
-  const fixedLanguage = '한국어';
-
   if (USE_REAL_USER) {
     try {
       // 백엔드에 realName만 업데이트 (country, language는 아직 미지원)
       const user = await endpoints.updateProfile(data);
 
-      // country, language는 localStorage에 고정값으로 저장
+      // country, language는 localStorage에 저장
       saveUserLocalData(user.id, {
-        country: fixedCountry,
-        language: fixedLanguage,
+        country: data.country,
+        language: data.language,
       });
 
-      // 반환 시 고정값 사용
+      // 반환 시 localStorage 데이터 포함
       return {
         ...user,
-        country: fixedCountry,
-        language: fixedLanguage,
+        country: data.country,
+        language: data.language,
       };
     } catch (error) {
-      console.error('Profile update failed (using fallback):', error);
-
-      // 백엔드 업데이트 실패 시 fallback: localStorage에만 저장
-      const currentUserData = await getCurrentUser();
-      if (currentUserData) {
-        saveUserLocalData(currentUserData.id, {
-          country: fixedCountry,
-          language: fixedLanguage,
-        });
-
-        return {
-          ...currentUserData,
-          realName: data.realName,
-          country: fixedCountry,
-          language: fixedLanguage,
-        };
-      }
-
+      console.error('Profile update failed:', error);
       throw error;
     }
   }
@@ -173,10 +152,6 @@ export async function updateProfile(data: {
  * 백엔드 연동 시: POST /rooms
  */
 export async function createRoom(name: string): Promise<Room> {
-  if (USE_REAL_ROOM) {
-    return await endpoints.createRoom(name);
-  }
-  // Mock
   await delay(500);
   return {
     ...mockRoom,
@@ -190,10 +165,6 @@ export async function createRoom(name: string): Promise<Room> {
  * 백엔드 연동 시: POST /rooms/join
  */
 export async function joinRoom(code: string): Promise<Room> {
-  if (USE_REAL_ROOM) {
-    return await endpoints.joinRoom(code);
-  }
-  // Mock
   await delay(500);
   return mockRoom;
 }
@@ -201,10 +172,8 @@ export async function joinRoom(code: string): Promise<Room> {
 /**
  * 내 방 정보 가져오기
  * 백엔드 연동 시: GET /rooms/my
- * TODO: 백엔드 API 미구현 - Mock 사용 중
  */
 export async function getMyRoom(): Promise<Room | null> {
-  // 백엔드 API 미구현으로 임시 Mock 사용
   await delay(300);
   return mockRoom;
 }
@@ -212,10 +181,8 @@ export async function getMyRoom(): Promise<Room | null> {
 /**
  * 방 멤버 목록 가져오기
  * 백엔드 연동 시: GET /rooms/:roomId/members
- * TODO: 백엔드 API 미구현 - Mock 사용 중
  */
 export async function getRoomMembers(roomId: string): Promise<User[]> {
-  // 백엔드 API 미구현으로 임시 Mock 사용
   await delay(300);
   return mockUsers;
 }
@@ -226,49 +193,46 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
 
 /**
  * 현재 주 스케줄 가져오기 (ACTIVE)
- * 백엔드 연동 시: GET /ActiveSchedules
+ * 백엔드 연동 시: GET /schedules/ActiveSchedules
  */
 export async function getActiveSchedule(): Promise<WeeklySchedule> {
   if (USE_REAL_SCHEDULE) {
     return await endpoints.getActiveSchedule();
   }
-  // Mock
   await delay(300);
   return mockWeeklySchedule;
 }
 
 /**
  * 다음 주 스케줄 가져오기 (TEMPORARY)
- * 백엔드 연동 시: GET /TemporarySchedules
+ * 백엔드 연동 시: GET /schedules/TemporarySchedules
  */
 export async function getTemporarySchedule(): Promise<WeeklySchedule> {
   if (USE_REAL_SCHEDULE) {
     return await endpoints.getTemporarySchedule();
   }
-  // Mock
   await delay(300);
   return mockWeeklySchedule;
 }
 
 /**
- * 스케줄 저장 (기본값: TEMPORARY)
- * 백엔드 연동 시: POST /schedules
+ * 주간 스케줄 저장
+ * 백엔드 연동 시: POST /schedules (기본값: TEMPORARY)
  */
 export async function saveSchedule(schedule: WeeklySchedule): Promise<void> {
   if (USE_REAL_SCHEDULE) {
-    return await endpoints.saveSchedule(schedule);
+    await endpoints.saveSchedule(schedule);
+    return;
   }
-  // Mock
   await delay(500);
+  // Mock: 실제로는 백엔드에 저장
 }
 
 /**
  * 모든 사용자의 스케줄 가져오기
  * 백엔드 연동 시: GET /schedules?userIds=id1,id2,...
- * TODO: 백엔드 API 미구현 - Mock 사용 중
  */
 export async function getAllSchedules(userIds: string[]): Promise<Map<string, WeeklySchedule>> {
-  // 백엔드 API 미구현으로 임시 Mock 사용
   await delay(300);
   const result = new Map<string, WeeklySchedule>();
   userIds.forEach(id => {

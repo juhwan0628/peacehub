@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import ScheduleEditor from '@/components/schedule/ScheduleEditor';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -9,6 +10,7 @@ import { createEmptySchedule } from '@/lib/utils/scheduleHelpers';
 import type { WeeklySchedule } from '@/types';
 
 export default function MainSchedulePage() {
+  const router = useRouter();
   const [schedule, setSchedule] = useState<WeeklySchedule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +41,7 @@ export default function MainSchedulePage() {
     try {
       await saveSchedule(schedule);
       alert('스케줄이 성공적으로 저장되었습니다.');
+      router.push('/dashboard');
     } catch (error) {
       console.error('스케줄 저장 실패:', error);
       alert('스케줄 저장에 실패했습니다. 다시 시도해주세요.');

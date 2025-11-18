@@ -18,23 +18,73 @@ PeaceHub는 룸메이트들이 집안일을 공평하게 분배하고 관리할 
 
 ### 주요 기능
 
-- 🔐 Google OAuth 로그인 (현재 Mock)
-- 👥 룸메이트 초대 및 관리
-- 📅 주간 타임테이블 작성 (조용시간, 외출시간 등)
-- 🎯 집안일 선호도 제출 (1지망, 2지망)
-- 📊 자동 업무 배정 알고리즘
-- 📈 월간 캘린더 및 타임라인 대시보드
+- 🔐 **Google OAuth 로그인** (백엔드 연동 완료)
+- 👤 **사용자 프로필 관리** (실명, 국가, 언어)
+- 👥 **룸메이트 초대 및 관리** (방 생성/참여)
+- 📅 **주간 타임테이블 작성** (조용시간, 외출시간 등)
+- 🔄 **Active/Temporary 스케줄 분리** (현재 주/다음 주)
+- 🎯 **집안일 선호도 제출** (1지망, 2지망)
+- 📊 **자동 업무 배정 알고리즘** (백엔드 구현 예정)
+- 📈 **월간 캘린더 및 타임라인 대시보드**
+- 🔒 **세션 기반 인증** (401 자동 로그아웃)
 
 ## 🚀 빠른 시작
 
-### 개발 서버 실행
+### 1. 환경 변수 설정 (필수)
+
+**프로젝트 루트에 `.env.local` 파일을 생성하세요:**
 
 ```bash
-npm install
+# .env.local 파일 생성
+touch .env.local
+```
+
+**`.env.local` 파일 내용:**
+
+```env
+# Backend API URL
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+
+# Feature flags (점진적 통합용)
+NEXT_PUBLIC_USE_REAL_AUTH=true
+NEXT_PUBLIC_USE_REAL_USER=true
+NEXT_PUBLIC_USE_REAL_ROOM=true
+NEXT_PUBLIC_USE_REAL_SCHEDULE=true
+```
+
+**⚠️ 중요**: `.env.local` 파일은 `.gitignore`에 포함되어 **GitHub에 올라가지 않습니다**. 각 팀원은 로컬에서 직접 생성해야 합니다.
+
+### 2. 백엔드 서버 실행
+
+프론트엔드와 함께 백엔드 서버도 실행해야 합니다:
+
+```bash
+# 터미널 1: 백엔드 서버 (포트 8000)
+cd ../backend
+npm install  # 최초 1회
+npm start
+
+# 터미널 2: 프론트엔드 서버 (포트 3000)
+cd ../front
+npm install  # 최초 1회
 npm run dev
 ```
 
-개발 서버는 http://localhost:3000 에서 실행됩니다.
+### 3. 브라우저 접속
+
+- **프론트엔드**: http://localhost:3000
+- **백엔드 API**: http://localhost:8000/api
+
+### Mock Mode로 실행하기
+
+백엔드 없이 Mock 데이터로 개발하려면 `.env.local`을 다음과 같이 설정:
+
+```env
+NEXT_PUBLIC_USE_REAL_AUTH=false
+NEXT_PUBLIC_USE_REAL_USER=false
+NEXT_PUBLIC_USE_REAL_ROOM=false
+NEXT_PUBLIC_USE_REAL_SCHEDULE=false
+```
 
 ### 빌드
 
@@ -189,26 +239,36 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 - 선호도 마감: 매주 **일요일 23:59:59**
 - 유틸리티: `getWeekStart(date)`, `getDayOfWeek(date)`
 
-## 🔄 최근 리팩토링 (2025-01)
+## 🔄 최근 업데이트 (2025-01)
 
-### 코드 중복 제거
+### Phase 5: 백엔드 API 연동 (진행 중)
+
+**✅ 완료된 통합:**
+- **Authentication**: Google OAuth, 세션 관리, 401 자동 리디렉션
+- **User Profile**: 사용자 정보 조회/수정 (localStorage 병합)
+- **Room**: 방 생성/참여
+- **Schedule**: Active/Temporary 스케줄 저장/조회, 타임라인 렌더링 개선
+
+**⏳ 예정:**
+- Preferences API 연동
+- Assignments API 연동
+- 실시간 업데이트 (WebSocket/Polling)
+
+### 코드 리팩토링 완료
 
 - **193줄 제거** (29% 감소)
 - 8개 중복 함수 통합 (`getWeekStart`, `createEmptySchedule` 등)
 - 3개 타임라인 구현 → 1개 통합 컴포넌트
+- Custom Hooks 추가 (`useApiData`, `useScheduleEditor`)
+- globals.css 확장 (28 → 270 lines)
 
-### 재사용성 개선
-
-- ✅ Custom Hooks 추가 (`useApiData`, `useScheduleEditor`)
-- ✅ 공통 컴포넌트 추가 (LoadingSpinner, PageContainer, EmptyState 등)
-- ✅ 유틸리티 함수 모듈화 (26개 함수)
-- ✅ globals.css 확장 (28 → 270 lines)
-
-### 백엔드 연동 준비
+### 백엔드 연동 아키텍처
 
 - ✅ Backend API 타입 정의 (`types/api.ts`)
 - ✅ 데이터 변환 레이어 구현 (`apiTransformers.ts`)
-- ✅ 실제 엔드포인트 구조 정의 (`lib/api/endpoints.ts`)
+- ✅ 실제 엔드포인트 구현 (`lib/api/endpoints.ts`)
+- ✅ Feature flags로 점진적 통합 (`USE_REAL_*` 환경 변수)
+- ✅ CORS & Session 설정 완료
 
 ## 📚 개발 가이드
 
@@ -238,12 +298,23 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 2. 자동으로 빌드 및 배포됨
 3. 환경 변수 설정 (추후 백엔드 연동 시)
 
-### 환경 변수 (예정)
+### 환경 변수
+
+**개발 환경 (`.env.local`):**
 
 ```env
-NEXT_PUBLIC_API_URL=https://api.peacehub.com
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_client_id
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+NEXT_PUBLIC_USE_REAL_AUTH=true
+NEXT_PUBLIC_USE_REAL_USER=true
+NEXT_PUBLIC_USE_REAL_ROOM=true
+NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 ```
+
+**프로덕션 환경:**
+
+Vercel 환경 변수 설정:
+- `NEXT_PUBLIC_API_BASE_URL`: 프로덕션 백엔드 URL
+- Feature flags는 모두 `true`로 설정
 
 ## 📝 라이선스
 

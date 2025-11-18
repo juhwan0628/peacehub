@@ -49,7 +49,15 @@ const DEFAULT_FETCH_OPTIONS: RequestInit = {
  */
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    // 에러 응답 처리
+    // 401 Unauthorized - 로그인 페이지로 강제 리디렉션
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('need login');
+    }
+
+    // 기타 에러 응답 처리
     const errorData = await response.json().catch(() => ({
       message: `HTTP ${response.status}: ${response.statusText}`,
     }));
