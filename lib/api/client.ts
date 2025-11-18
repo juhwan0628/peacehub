@@ -152,6 +152,9 @@ export async function updateProfile(data: {
  * 백엔드 연동 시: POST /rooms
  */
 export async function createRoom(name: string): Promise<Room> {
+  if (USE_REAL_ROOM) {
+    return await endpoints.createRoom(name);
+  }
   await delay(500);
   return {
     ...mockRoom,
@@ -165,6 +168,9 @@ export async function createRoom(name: string): Promise<Room> {
  * 백엔드 연동 시: POST /rooms/join
  */
 export async function joinRoom(code: string): Promise<Room> {
+  if (USE_REAL_ROOM) {
+    return await endpoints.joinRoom(code);
+  }
   await delay(500);
   return mockRoom;
 }
