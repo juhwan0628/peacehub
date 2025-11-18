@@ -341,7 +341,7 @@ useEffect(() => {
 - **Schedule**
   - ✅ Get my schedule (`GET /api/schedules`)
   - ✅ Save schedule (`POST /api/schedules`)
-  - ✅ Get all schedules (`GET /api/schedules/all`)
+  - 🔄 Get all schedules (`GET /api/schedules/all`) - Mock mode (백엔드 미구현)
   - ✅ Frontend ↔ Backend data transformation (TimeBlock conversion)
 
 - **CORS & Session**
@@ -366,6 +366,9 @@ NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 
 - **Room**
   - `GET /api/rooms/:id/members` - 방 멤버 목록 조회
+
+- **Schedule**
+  - `GET /api/schedules/all` - 룸 전체 스케줄 조회
 
 - **Preferences**
   - `GET /api/preferences` - 내 선호도 조회

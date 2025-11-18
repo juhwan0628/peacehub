@@ -233,19 +233,10 @@ export async function saveSchedule(schedule: WeeklySchedule): Promise<void> {
 /**
  * 모든 사용자의 스케줄 가져오기
  * 백엔드 연동 시: GET /schedules?userIds=id1,id2,...
+ * TODO: 백엔드 API 미구현 - Mock 사용 중
  */
 export async function getAllSchedules(userIds: string[]): Promise<Map<string, WeeklySchedule>> {
-  if (USE_REAL_SCHEDULE) {
-    // Real API는 userIds 파라미터 없이 room의 모든 멤버 스케줄 반환
-    const schedules = await endpoints.getAllSchedules();
-    // Record를 Map으로 변환
-    const result = new Map<string, WeeklySchedule>();
-    Object.entries(schedules).forEach(([userId, schedule]) => {
-      result.set(userId, schedule);
-    });
-    return result;
-  }
-  // Mock
+  // 백엔드 API 미구현으로 임시 Mock 사용
   await delay(300);
   const result = new Map<string, WeeklySchedule>();
   userIds.forEach(id => {
