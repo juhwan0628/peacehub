@@ -2,9 +2,6 @@
  * Real API Endpoints
  *
  * 백엔드와 실제로 통신하는 fetch 기반 API 함수들
- * Mock API (mockData.ts)와 교체하여 사용
- *
- * 환경 변수 USE_MOCK_API로 mock/real 전환
  */
 
 import type { User, Room, WeeklySchedule, Preference } from '@/types';

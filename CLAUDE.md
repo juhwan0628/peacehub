@@ -31,7 +31,7 @@ The app uses **Next.js App Router with route groups**:
 
 **Main app flow:**
 1. Root (`/`) → redirects to `/login`
-2. Login (mock Google OAuth) → `/onboarding/profile`
+2. Login (Google OAuth) → `/onboarding/profile`
 3. Onboarding: profile → join-room → schedule → `/dashboard`
 4. Main app: dashboard, schedule, assign, result pages
 

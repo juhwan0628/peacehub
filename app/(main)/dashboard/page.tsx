@@ -44,7 +44,7 @@ export default function DashboardPage() {
     { autoFetch: !!currentUser }
   );
 
-  // 3. Fetch all schedules once users are loaded (통합 타임라인용, Mock)
+  // 3. Fetch all schedules once users are loaded (통합 타임라인용)
   const getAllSchedulesCallback = useCallback(async () => {
     if (!users || !Array.isArray(users) || users.length === 0) {
       return new Map<string, WeeklySchedule>();

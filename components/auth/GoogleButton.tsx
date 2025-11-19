@@ -6,8 +6,8 @@ import { getGoogleAuthUrl } from '@/lib/api/endpoints';
 /**
  * Google 로그인 버튼 컴포넌트
  *
- * onClick: 버튼 클릭 시 실행할 함수
- * 백엔드 연동 시: Google OAuth URL로 리다이렉트
+ * onClick: 버튼 클릭 시 실행할 함수 (optional)
+ * 기본 동작: Google OAuth URL로 리디렉트
  */
 
 interface GoogleButtonProps {
@@ -19,7 +19,7 @@ export default function GoogleButton({ onClick }: GoogleButtonProps) {
     if (onClick) {
       onClick();
     } else {
-      // 환경 변수에 따라 실제 OAuth 또는 Mock 플로우 진행
+      // Google OAuth URL로 리디렉트
       const authUrl = await getGoogleAuthUrl();
       window.location.href = authUrl;
     }
