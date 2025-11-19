@@ -7,12 +7,12 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { TASKS } from '@/types';
+import { getCurrentUser } from '@/lib/api/endpoints';
 import {
   getMyPreference,
   savePreference,
   getRoomPreferences,
   getRoomMembers,
-  getCurrentUser,
   getMyRoom,
 } from '@/lib/api/client';
 import type { Preference, User } from '@/types';

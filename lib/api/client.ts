@@ -1,13 +1,10 @@
 /**
  * API Client
  *
- * 현재는 더미 데이터를 반환하지만, 향후 백엔드 API와 연동 시
- * 이 파일의 함수들만 수정하면 됩니다.
+ * 백엔드 미구현 API들을 위한 빈 데이터 반환 레이어
+ * Real API는 lib/api/endpoints.ts에서 직접 import 사용
  *
- * 백엔드 연동 시 수정 사항:
- * 1. BASE_URL을 실제 백엔드 주소로 변경
- * 2. 각 함수에서 fetch를 사용하여 실제 API 호출
- * 3. 인증 토큰(쿠키/세션) 처리 추가
+ * 이 파일은 404 방지를 위해 빈 데이터를 반환하는 함수만 포함합니다.
  */
 
 import type {
@@ -19,190 +16,25 @@ import type {
   Task
 } from '@/types';
 import { TASKS } from '@/types';
-import {
-  currentUser,
-  mockUsers,
-  mockRoom,
-  mockWeeklySchedule,
-  mockPreferences,
-  mockAssignments,
-  mockAllSchedules,
-} from './mockData';
-import * as endpoints from './endpoints';
-import { saveUserLocalData, getUserLocalData } from '@/lib/utils/userStorage';
-
-// 백엔드 API URL
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-
-// Feature flags for progressive integration
-const USE_REAL_AUTH = process.env.NEXT_PUBLIC_USE_REAL_AUTH === 'true';
-const USE_REAL_USER = process.env.NEXT_PUBLIC_USE_REAL_USER === 'true';
-const USE_REAL_ROOM = process.env.NEXT_PUBLIC_USE_REAL_ROOM === 'true';
-const USE_REAL_SCHEDULE = process.env.NEXT_PUBLIC_USE_REAL_SCHEDULE === 'true';
-
-// ============================================
-// 인증 관련 API
-// ============================================
-
-/**
- * Google OAuth 로그인 URL 가져오기
- * 백엔드 연동 시: GET /auth/google
- */
-export async function getGoogleAuthUrl(): Promise<string> {
-  if (USE_REAL_AUTH) {
-    // 실제 백엔드 OAuth URL
-    return `${BASE_URL}/auth/google`;
-  }
-  // Mock: 온보딩 프로필 페이지로 직접 이동
-  return '/onboarding/profile';
-}
-
-/**
- * 현재 로그인한 사용자 정보 가져오기
- * 백엔드 연동 시: GET /users (쿠키/세션 기반)
- */
-export async function getCurrentUser(): Promise<User | null> {
-  if (USE_REAL_USER) {
-    try {
-      const user = await endpoints.getCurrentUser();
-
-      if (user) {
-        // localStorage에서 추가 정보 조회 (country, language)
-        const localData = getUserLocalData(user.id);
-        if (localData) {
-          user.country = localData.country;
-          user.language = localData.language;
-        }
-      }
-
-      return user;
-    } catch (error) {
-      if (error instanceof Error && error.message === 'need login') {
-        return null;
-      }
-      throw error;
-    }
-  }
-  // Mock
-  await delay(300);
-  return currentUser;
-}
-
-/**
- * 로그아웃
- * 백엔드 연동 시: POST /auth/logout
- */
-export async function logout(): Promise<void> {
-  if (USE_REAL_AUTH) {
-    await endpoints.logout();
-    return;
-  }
-  // Mock
-  await delay(300);
-  // 쿠키 삭제 등
-}
-
-// ============================================
-// 사용자 프로필 관련 API
-// ============================================
-
-/**
- * 프로필 정보 업데이트 (실명, 국가, 언어)
- * 백엔드 연동 시: PUT /users
- */
-export async function updateProfile(data: {
-  realName: string;
-  country: string;
-  language: string;
-}): Promise<User> {
-  if (USE_REAL_USER) {
-    try {
-      // 백엔드에 realName만 업데이트 (country, language는 아직 미지원)
-      const user = await endpoints.updateProfile(data);
-
-      // country, language는 localStorage에 저장
-      saveUserLocalData(user.id, {
-        country: data.country,
-        language: data.language,
-      });
-
-      // 반환 시 localStorage 데이터 포함
-      return {
-        ...user,
-        country: data.country,
-        language: data.language,
-      };
-    } catch (error) {
-      console.error('Profile update failed:', error);
-      throw error;
-    }
-  }
-
-  // Mock
-  await delay(500);
-  return { ...currentUser, ...data };
-}
 
 // ============================================
 // 방(Room) 관련 API
 // ============================================
 
 /**
- * 방 생성
- * 백엔드 연동 시: POST /rooms
- */
-export async function createRoom(name: string): Promise<Room> {
-  if (USE_REAL_ROOM) {
-    return await endpoints.createRoom(name);
-  }
-  await delay(500);
-  return {
-    ...mockRoom,
-    name,
-    code: generateRoomCode(),
-  };
-}
-
-/**
- * 방 참여 (코드로)
- * 백엔드 연동 시: POST /rooms/join
- */
-export async function joinRoom(code: string): Promise<Room> {
-  if (USE_REAL_ROOM) {
-    return await endpoints.joinRoom(code);
-  }
-  await delay(500);
-  return mockRoom;
-}
-
-/**
  * 내 방 정보 가져오기
- * 백엔드 연동 시: GET /rooms/my
- *
- * ⚠️ 임시: 백엔드 미구현으로 항상 Mock 사용
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getMyRoom(): Promise<Room | null> {
-  // TODO: 백엔드 구현 후 USE_REAL_ROOM 플래그 적용
-  // if (USE_REAL_ROOM) {
-  //   return await endpoints.getMyRoom();
-  // }
-  await delay(300);
-  return mockRoom;
+  return null;
 }
 
 /**
  * 방 멤버 목록 가져오기
- * 백엔드 연동 시: GET /rooms/:roomId/members
- *
- * ⚠️ 임시: 백엔드 미구현으로 항상 Mock 사용
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getRoomMembers(roomId: string): Promise<User[]> {
-  // TODO: 백엔드 구현 후 USE_REAL_ROOM 플래그 적용
-  // if (USE_REAL_ROOM) {
-  //   return await endpoints.getRoomMembers(roomId);
-  // }
-  await delay(300);
-  return mockUsers;
+  return [];
 }
 
 // ============================================
@@ -210,58 +42,11 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
 // ============================================
 
 /**
- * 현재 주 스케줄 가져오기 (ACTIVE)
- * 백엔드 연동 시: GET /schedules/ActiveSchedules
- */
-export async function getActiveSchedule(): Promise<WeeklySchedule> {
-  if (USE_REAL_SCHEDULE) {
-    return await endpoints.getActiveSchedule();
-  }
-  await delay(300);
-  return mockWeeklySchedule;
-}
-
-/**
- * 다음 주 스케줄 가져오기 (TEMPORARY)
- * 백엔드 연동 시: GET /schedules/TemporarySchedules
- */
-export async function getTemporarySchedule(): Promise<WeeklySchedule> {
-  if (USE_REAL_SCHEDULE) {
-    return await endpoints.getTemporarySchedule();
-  }
-  await delay(300);
-  return mockWeeklySchedule;
-}
-
-/**
- * 주간 스케줄 저장
- * 백엔드 연동 시: POST /schedules (기본값: TEMPORARY)
- * @param schedule Frontend WeeklySchedule
- * @param weekStart 해당 주의 월요일 날짜 (YYYY-MM-DD 형식)
- */
-export async function saveSchedule(schedule: WeeklySchedule, weekStart: string): Promise<void> {
-  if (USE_REAL_SCHEDULE) {
-    await endpoints.saveSchedule(schedule, weekStart);
-    return;
-  }
-  await delay(500);
-  // Mock: 실제로는 백엔드에 저장
-}
-
-/**
  * 모든 사용자의 스케줄 가져오기
- * 백엔드 연동 시: GET /schedules?userIds=id1,id2,...
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getAllSchedules(userIds: string[]): Promise<Map<string, WeeklySchedule>> {
-  await delay(300);
-  const result = new Map<string, WeeklySchedule>();
-  userIds.forEach(id => {
-    const schedule = mockAllSchedules.get(id);
-    if (schedule) {
-      result.set(id, schedule);
-    }
-  });
-  return result;
+  return new Map();
 }
 
 // ============================================
@@ -270,37 +55,34 @@ export async function getAllSchedules(userIds: string[]): Promise<Map<string, We
 
 /**
  * 업무 목록 가져오기 (고정 데이터)
+ * 프론트엔드 상수 반환
  */
 export async function getTasks(): Promise<Task[]> {
-  await delay(100);
   return TASKS;
 }
 
 /**
  * 내 선호도 가져오기
- * 백엔드 연동 시: GET /preferences/my
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getMyPreference(): Promise<Preference | null> {
-  await delay(300);
-  return mockPreferences[0];
+  return null;
 }
 
 /**
  * 선호도 저장
- * 백엔드 연동 시: PUT /preferences/my
+ * ⚠️ 백엔드 미구현 - no-op
  */
 export async function savePreference(first: string, second: string): Promise<void> {
-  await delay(500);
-  // Mock: 실제로는 백엔드에 저장
+  return;
 }
 
 /**
  * 방의 모든 멤버 선호도 가져오기
- * 백엔드 연동 시: GET /preferences/room/:roomId
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getRoomPreferences(roomId: string): Promise<Preference[]> {
-  await delay(300);
-  return mockPreferences.filter((p) => p.roomId === roomId);
+  return [];
 }
 
 // ============================================
@@ -309,50 +91,24 @@ export async function getRoomPreferences(roomId: string): Promise<Preference[]> 
 
 /**
  * 이번 주 배정 결과 가져오기
- * 백엔드 연동 시: GET /assignments/current
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getCurrentAssignments(): Promise<Assignment[]> {
-  await delay(300);
-  return mockAssignments;
+  return [];
 }
 
 /**
  * 특정 주의 배정 결과 가져오기
- * 백엔드 연동 시: GET /assignments?weekStart=YYYY-MM-DD
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getAssignmentsByWeek(weekStart: string): Promise<Assignment[]> {
-  await delay(300);
-  return mockAssignments;
+  return [];
 }
 
 /**
  * 내 배정 결과만 가져오기
- * 백엔드 연동 시: GET /assignments/my
+ * ⚠️ 백엔드 미구현 - 빈 데이터 반환
  */
 export async function getMyAssignments(): Promise<Assignment[]> {
-  await delay(300);
-  return mockAssignments.filter(a => a.userId === currentUser.id);
-}
-
-// ============================================
-// 유틸리티 함수
-// ============================================
-
-/**
- * 딜레이 함수 (더미 API 응답 시뮬레이션)
- */
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * 방 코드 생성 (6자리 영문+숫자)
- */
-function generateRoomCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  return [];
 }

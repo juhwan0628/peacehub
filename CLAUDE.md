@@ -35,30 +35,28 @@ The app uses **Next.js App Router with route groups**:
 3. Onboarding: profile → join-room → schedule → `/dashboard`
 4. Main app: dashboard, schedule, assign, result pages
 
-### Data Layer (Mock API Pattern)
+### Data Layer (API Integration)
 
-**Location:** `lib/api/client.ts`, `lib/api/mockData.ts`, and `lib/api/endpoints.ts`
+**Location:** `lib/api/endpoints.ts` and `lib/api/client.ts`
 
-The app supports both **mock** and **real** API modes:
+The app uses **Real backend APIs** with fallback for unimplemented endpoints:
 
-- `client.ts` - Current mock API implementation with simulated delays (500ms)
-- `endpoints.ts` - Real backend API structure (ready for integration)
-- `mockData.ts` - Pure test data without logic
-- **Backend integration:** Toggle `USE_MOCK_API` environment variable
+- `endpoints.ts` - **Real backend API implementation** (fully integrated)
+- `client.ts` - **Fallback layer** for backend-unimplemented APIs (returns empty data, 404 prevention)
 
 **API Function Categories:**
-- Authentication: `getCurrentUser()`, `logout()`, `getGoogleAuthUrl()`
-- Profile: `updateProfile(data)`
-- Room: `createRoom()`, `joinRoom()`, `getMyRoom()`, `getRoomMembers()`
-- Schedule: `getActiveSchedule()`, `getTemporarySchedule()`, `saveSchedule()`, `getAllSchedules()`
-- Preferences: `getTasks()`, `getMyPreference()`, `savePreference()`
-- Assignments: `getCurrentAssignments()`, `getAssignmentsByWeek()`, `getMyAssignments()`
 
-**Mock Data Setup:**
-- 5 mock users: 양희석, 이세용, 정준영, 조재현, 허주환
-- Current user: 허주환 (user-5)
-- 1 mock room: "301호" with code "ABC123"
-- Pre-populated schedules and assignments for testing
+**✅ Real APIs (use endpoints.ts):**
+- Authentication: `getCurrentUser()`, `getGoogleAuthUrl()`
+- Profile: `updateProfile(data)`
+- Room: `createRoom()`, `joinRoom()`
+- Schedule: `getActiveSchedule()`, `getTemporarySchedule()`, `saveSchedule()`
+
+**⏳ Fallback APIs (use client.ts - backend pending):**
+- Room: `getMyRoom()`, `getRoomMembers()` → return `null`, `[]`
+- Schedule: `getAllSchedules()` → return `new Map()`
+- Preferences: `getTasks()`, `getMyPreference()`, `savePreference()`, `getRoomPreferences()` → return empty/TASKS constant
+- Assignments: `getCurrentAssignments()`, `getAssignmentsByWeek()`, `getMyAssignments()` → return `[]`
 
 ### Component Organization
 
@@ -83,9 +81,8 @@ hooks/
 
 lib/
 ├── api/
-│   ├── client.ts         # Mock API (current)
-│   ├── endpoints.ts      # Real API structure (ready for backend)
-│   └── mockData.ts       # Test data
+│   ├── client.ts         # Fallback API (backend-unimplemented endpoints)
+│   └── endpoints.ts      # Real API (fully integrated)
 ├── constants/
 │   ├── colors.ts         # Unified color schemes
 │   ├── tasks.ts          # Task constants (TASKS, EMOJIS, TIME_RANGES)
@@ -229,7 +226,7 @@ const userName = getUserName('user-1', users);
 'use client';
 import { useApiData } from '@/hooks/useApiData';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
-import { getCurrentUser } from '@/lib/api/client';
+import { getCurrentUser } from '@/lib/api/endpoints';
 
 export default function MyPage() {
   const { data, isLoading, error } = useApiData(() => getCurrentUser());
@@ -297,109 +294,51 @@ useEffect(() => {
 
 ## Project-Specific Notes
 
-### Current Development Status
-
-- **Phase 1 (Completed):** Login, Profile, Join-Room, Schedule onboarding pages
-- **Phase 2 (Completed):** Dashboard, Assign, Schedule, Result pages with full UI
-- **Phase 3 (Completed):** Frontend optimization & refactoring for backend integration
-- **Phase 4 (Completed):** Backend integration preparation complete
-- **Phase 5 (In Progress):** Backend API integration
-  - ✅ Phase 1-2: Authentication & User Profile (완료)
-  - ✅ Phase 3: Room 생성/참여 (완료)
-  - ✅ **Phase 4: Schedule 저장/조회 (완료) - 백엔드 API 완전 통합!**
-    - ISO timestamp 형식으로 날짜 포함 전송
-    - FREE 블록 명시적 생성 (24시간 공백 없음)
-    - 백엔드 검증 로직 통과 (날짜별 00:00~24:00 완전 커버)
-  - ✅ Active/Temporary 스케줄 분리 (완료)
-  - ✅ 타임라인 렌더링 개선 (시간별 칸 구분)
-  - ⏳ Phase 5-7: Preferences, Assignments (예정)
-
-### Code Refactoring Achievements (Latest)
-
-- ✅ **29% code reduction** (-193 lines of duplicate code)
-- ✅ **Timeline rendering unified** (3 components → 1 TimelineRenderer)
-- ✅ **globals.css enhanced** (243 lines of reusable styles)
-- ✅ **Utility functions consolidated** (8 duplicate functions eliminated)
-- ✅ **Component reusability maximized** (LoadingSpinner, PageContainer, EmptyState)
-- ✅ **Backend types prepared** (types/api.ts, apiTransformers.ts)
-- ✅ **Backend integration optimized** (Active/Temporary schedule separation, hour-by-hour timeline rendering)
-- ✅ **Schedule API 완전 통합** (ISO timestamp, FREE 블록, 날짜 포함)
-
 ### Backend Integration Status
 
-**✅ Integrated APIs (Phase 1-4 Complete - 온보딩 연동 완료):**
+**✅ Phase 1-4 Complete - 온보딩 API 완전 통합**
+
+All onboarding and main app Real APIs are fully integrated:
 
 - **Authentication**
   - ✅ Google OAuth login (`GET /api/auth/google`)
   - ✅ OAuth callback with session/cookie
   - ✅ Auto-redirect to `/auth/callback` → `/onboarding/profile`
+  - ✅ Session-based auth (credentials: 'include')
+  - ✅ 401 auto-redirect to login
 
 - **User Profile**
   - ✅ Get current user (`GET /api/users/me`)
-  - ✅ Update profile (`PUT /api/users/profile`) - name 필드만 Real API
-  - ✅ User 조회는 Real API, country/language는 localStorage에서 병합
-  - 🔄 country, language 필드는 localStorage 사용 (백엔드 미지원)
+  - ✅ Update profile (`PUT /api/users/profile`)
+  - ℹ️ `country`, `language` fields stored in localStorage (backend unsupported)
 
 - **Room**
   - ✅ Create room (`POST /api/rooms`)
   - ✅ Join room (`POST /api/rooms/join`)
-  - 🔄 Get my room (`GET /api/rooms/my`) - Mock mode (백엔드 미구현)
-  - 🔄 Get room members (`GET /api/rooms/:id/members`) - Mock mode (백엔드 미구현)
+  - ⏳ Get my room (`GET /api/rooms/my`) - returns `null` (pending backend)
+  - ⏳ Get room members (`GET /api/rooms/:id/members`) - returns `[]` (pending backend)
 
-- **Schedule** (ScheduleStatus: ACTIVE/TEMPORARY 구분)
-  - ✅ Get active schedule (`GET /api/schedules/ActiveSchedules`) - 현재 주 스케줄
-  - ✅ Get temporary schedule (`GET /api/schedules/TemporarySchedules`) - 다음 주 스케줄
-  - ✅ Save schedule (`POST /api/schedules`) - **완전 통합 완료!**
-    - ISO timestamp 형식으로 날짜 포함 전송
-    - FREE 블록 명시적 생성 (24시간 공백 없음)
-    - 온보딩: 현재 주(ACTIVE), 메인: 다음 주(TEMPORARY)
-    - ⚠️ 필드명: `startTime/endTime` (API 문서와 다름, 실제 백엔드 구현 기준)
-  - 🔄 Get all schedules (전체 룸메이트) - Mock mode (백엔드 미구현)
-  - ✅ Frontend ↔ Backend data transformation (TimeBlock conversion)
-  - ✅ ScheduleStatus 개념: ACTIVE (현재 주), TEMPORARY (다음 주)
-  - ✅ 스케줄러가 자동으로 TEMPORARY → ACTIVE 승격
-  - ✅ 타임라인 시간별 칸 구분 렌더링 (스케줄 에디터와 동일)
-
-- **CORS & Session**
-  - ✅ CORS configured (`credentials: true`)
-  - ✅ Session cookies working (`connect.sid`)
-  - ✅ Real API mode enabled
-
-**Environment Variables:**
-```env
-# .env.local (Phase 4 완료 - 온보딩 연동 완료)
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
-NEXT_PUBLIC_USE_REAL_AUTH=true
-NEXT_PUBLIC_USE_REAL_USER=true
-NEXT_PUBLIC_USE_REAL_ROOM=true
-NEXT_PUBLIC_USE_REAL_SCHEDULE=true
-```
-
-**⏳ Pending APIs (백엔드 미구현):**
-
-- **Room**
-  - `GET /api/rooms/my` - 내 방 정보 조회
-  - `GET /api/rooms/:id/members` - 방 멤버 목록 조회
-
-- **Schedule**
-  - `GET /api/schedules/all` - 룸 전체 스케줄 조회
+- **Schedule** (ScheduleStatus: ACTIVE/TEMPORARY)
+  - ✅ Get active schedule (`GET /api/schedules/ActiveSchedules`) - 현재 주
+  - ✅ Get temporary schedule (`GET /api/schedules/TemporarySchedules`) - 다음 주
+  - ✅ Save schedule (`POST /api/schedules`)
+    - ISO timestamp format with date
+    - Explicit FREE blocks (24h coverage)
+    - Onboarding: ACTIVE, Main: TEMPORARY
+  - ⏳ Get all schedules - returns `new Map()` (pending backend)
 
 - **Preferences**
-  - `GET /api/preferences` - 내 선호도 조회
-  - `POST /api/preferences` - 선호도 저장
-  - `GET /api/preferences/all` - 룸 전체 선호도 조회
+  - ⏳ All APIs return empty data (pending backend)
 
 - **Assignments**
-  - `GET /api/assignments/current` - 현재 주차 배정
-  - `GET /api/assignments?weekStart=YYYY-MM-DD` - 특정 주차 배정
-  - `GET /api/assignments/my` - 내 배정 내역
+  - ⏳ All APIs return `[]` (pending backend)
 
-**Data format differences handled by transformers:**
-- DayOfWeek: 'mon' (frontend) ↔ 'MONDAY' (backend)
-- TimeSlot: 'quiet' ↔ 'QUIET', 'out' ↔ 'BUSY', null ↔ 'FREE'
-- Time: hours (0-23) ↔ ISO timestamp with date (e.g., "2025-11-24T09:00:00.000Z")
-- User fields: `realName` (frontend) ↔ `name` (backend)
-- **Schedule fields**: `startTime/endTime` (API 문서는 startDateTime/endDateTime이지만 실제 구현은 startTime/endTime)
+**Data Transformers:**
+- `lib/utils/apiTransformers.ts` handles frontend ↔ backend conversion
+- DayOfWeek: `'mon'` ↔ `'MONDAY'`
+- TimeSlot: `'quiet'` ↔ `'QUIET'`, `'out'` ↔ `'BUSY'`, `null` ↔ `'FREE'`
+- Time: hours (0-23) ↔ ISO timestamps
+- User: `realName` ↔ `name`
 
 ### Authentication Status
 
@@ -432,10 +371,6 @@ NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 - Output directory: `.next/` (default)
 - Environment variables:
   - `NEXT_PUBLIC_API_BASE_URL` - Backend API URL (required)
-  - `NEXT_PUBLIC_USE_REAL_AUTH` - Enable real auth (default: false)
-  - `NEXT_PUBLIC_USE_REAL_USER` - Enable real user API (default: false)
-  - `NEXT_PUBLIC_USE_REAL_ROOM` - Enable real room API (default: false)
-  - `NEXT_PUBLIC_USE_REAL_SCHEDULE` - Enable real schedule API (default: false)
 
 ## Best Practices & Guidelines
 
@@ -540,31 +475,14 @@ Before committing, verify:
 # .env.local (root directory)
 # Backend API URL
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
-
-# Feature flags (점진적 통합용)
-NEXT_PUBLIC_USE_REAL_AUTH=true
-NEXT_PUBLIC_USE_REAL_USER=true
-NEXT_PUBLIC_USE_REAL_ROOM=true
-NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 ```
 
 **중요**: `.env.local` 파일은 `.gitignore`에 포함되어 GitHub에 올라가지 않습니다.
 각 개발자는 로컬에서 직접 생성해야 합니다.
 
-### Mock Mode로 실행하기
-
-백엔드 없이 Mock 데이터로 실행하려면:
-
-```env
-NEXT_PUBLIC_USE_REAL_AUTH=false
-NEXT_PUBLIC_USE_REAL_USER=false
-NEXT_PUBLIC_USE_REAL_ROOM=false
-NEXT_PUBLIC_USE_REAL_SCHEDULE=false
-```
-
 ### 백엔드 서버 실행
 
-프론트엔드와 함께 백엔드 서버도 실행해야 합니다:
+프론트엔드는 **항상 Real API**를 사용합니다. 백엔드 서버와 함께 실행하세요:
 
 ```bash
 # 백엔드 서버 (포트 8000)
@@ -575,3 +493,5 @@ npm start
 cd ../front
 npm run dev
 ```
+
+**참고:** 백엔드 미구현 API는 빈 데이터를 반환하므로 백엔드 없이도 에러 없이 실행 가능합니다.

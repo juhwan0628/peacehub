@@ -6,12 +6,11 @@ import CombinedTimelineBar from '@/components/dashboard/CombinedTimelineBar';
 import TimelineBar from '@/components/dashboard/TimelineBar';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import type { User, Assignment, WeeklySchedule } from '@/types';
+import { getCurrentUser, getActiveSchedule } from '@/lib/api/endpoints';
 import {
-  getCurrentUser,
   getRoomMembers,
   getCurrentAssignments,
   getAllSchedules,
-  getActiveSchedule,
 } from '@/lib/api/client';
 import { useApiData, useParallelApiData } from '@/hooks/useApiData';
 

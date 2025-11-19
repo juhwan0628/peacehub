@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import ScheduleEditor from '@/components/schedule/ScheduleEditor';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
-import { saveSchedule, getTemporarySchedule } from '@/lib/api/client';
+import { saveSchedule, getTemporarySchedule } from '@/lib/api/endpoints';
 import { createEmptySchedule } from '@/lib/utils/scheduleHelpers';
 import { getNextWeekStart } from '@/lib/utils/dateHelpers';
 import type { WeeklySchedule } from '@/types';

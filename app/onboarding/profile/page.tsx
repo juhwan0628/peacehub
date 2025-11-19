@@ -8,7 +8,7 @@ import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import { COUNTRIES, LANGUAGES } from '@/types';
-import { updateProfile, getCurrentUser } from '@/lib/api/client';
+import { updateProfile, getCurrentUser } from '@/lib/api/endpoints';
 
 /**
  * 프로필 설정 페이지

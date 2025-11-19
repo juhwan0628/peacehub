@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { WeeklySchedule } from '@/types';
-import { getTemporarySchedule, saveSchedule } from '@/lib/api/client';
+import { getTemporarySchedule, saveSchedule } from '@/lib/api/endpoints';
 import { createEmptySchedule } from '@/lib/utils/scheduleHelpers';
 import { getWeekStart, getNextWeekStart } from '@/lib/utils/dateHelpers';
 import { useApiData } from './useApiData';

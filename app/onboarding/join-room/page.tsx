@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import { createRoom, joinRoom } from '@/lib/api/client';
+import { createRoom, joinRoom } from '@/lib/api/endpoints';
 
 /**
  * 방 참여/생성 페이지

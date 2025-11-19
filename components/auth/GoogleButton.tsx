@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getGoogleAuthUrl } from '@/lib/api/client';
+import { getGoogleAuthUrl } from '@/lib/api/endpoints';
 
 /**
  * Google 로그인 버튼 컴포넌트

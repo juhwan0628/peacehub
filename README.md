@@ -18,15 +18,15 @@ PeaceHub는 룸메이트들이 집안일을 공평하게 분배하고 관리할 
 
 ### 주요 기능
 
-- 🔐 **Google OAuth 로그인** (백엔드 연동 완료)
+- 🔐 **Google OAuth 로그인**
 - 👤 **사용자 프로필 관리** (실명, 국가, 언어)
 - 👥 **룸메이트 초대 및 관리** (방 생성/참여)
-- 📅 **주간 타임테이블 작성** (조용시간, 외출시간 등)
+- 📅 **주간 타임테이블 작성** (조용시간, 외출시간)
 - 🔄 **Active/Temporary 스케줄 분리** (현재 주/다음 주)
 - 🎯 **집안일 선호도 제출** (1지망, 2지망)
-- 📊 **자동 업무 배정 알고리즘** (백엔드 구현 예정)
+- 📊 **자동 업무 배정 알고리즘**
 - 📈 **월간 캘린더 및 타임라인 대시보드**
-- 🔒 **세션 기반 인증** (401 자동 로그아웃)
+- 🔒 **세션 기반 인증**
 
 ## 🚀 빠른 시작
 
@@ -44,12 +44,6 @@ touch .env.local
 ```env
 # Backend API URL
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
-
-# Feature flags (점진적 통합용)
-NEXT_PUBLIC_USE_REAL_AUTH=true
-NEXT_PUBLIC_USE_REAL_USER=true
-NEXT_PUBLIC_USE_REAL_ROOM=true
-NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 ```
 
 **⚠️ 중요**: `.env.local` 파일은 `.gitignore`에 포함되어 **GitHub에 올라가지 않습니다**. 각 팀원은 로컬에서 직접 생성해야 합니다.
@@ -74,17 +68,6 @@ npm run dev
 
 - **프론트엔드**: http://localhost:3000
 - **백엔드 API**: http://localhost:8000/api
-
-### Mock Mode로 실행하기
-
-백엔드 없이 Mock 데이터로 개발하려면 `.env.local`을 다음과 같이 설정:
-
-```env
-NEXT_PUBLIC_USE_REAL_AUTH=false
-NEXT_PUBLIC_USE_REAL_USER=false
-NEXT_PUBLIC_USE_REAL_ROOM=false
-NEXT_PUBLIC_USE_REAL_SCHEDULE=false
-```
 
 ### 빌드
 
@@ -143,12 +126,11 @@ npm run lint
 │
 ├── lib/                          # 비즈니스 로직 및 유틸리티
 │   ├── api/                      # API 레이어
-│   │   ├── client.ts             # Mock API 함수들
-│   │   ├── mockData.ts           # 테스트용 Mock 데이터
-│   │   └── endpoints.ts          # 실제 백엔드 엔드포인트 (준비됨)
+│   │   ├── endpoints.ts          # Real backend API
+│   │   └── client.ts             # Fallback for unimplemented APIs
 │   ├── utils/                    # 유틸리티 함수
-│   │   ├── dateHelpers.ts        # 날짜/주 계산 (17 functions)
-│   │   ├── scheduleHelpers.ts    # 스케줄 조작 (9 functions)
+│   │   ├── dateHelpers.ts        # 날짜/주 계산
+│   │   ├── scheduleHelpers.ts    # 스케줄 조작
 │   │   ├── taskHelpers.ts        # 업무 정보 유틸리티
 │   │   └── apiTransformers.ts    # Frontend ↔ Backend 변환
 │   └── constants/                # 상수 정의
@@ -171,36 +153,15 @@ npm run lint
 
 ## 🏗️ 아키텍처 하이라이트
 
-### 1. Mock API 패턴 (백엔드 연동 준비 완료)
-
-현재 모든 API 호출은 `lib/api/client.ts`에서 Mock 데이터를 반환합니다. 백엔드 연동 시 각 함수의 내부 구현만 `fetch()` 호출로 변경하면 됩니다.
-
-```typescript
-// 현재 (Mock)
-export async function getCurrentUser(): Promise<User> {
-  await delay(500);
-  return mockUsers.find(u => u.id === 'user-5')!;
-}
-
-// 백엔드 연동 후
-export async function getCurrentUser(): Promise<User> {
-  const response = await fetch('/api/users/', {
-    headers: { Authorization: `Bearer ${getToken()}` }
-  });
-  const backendData = await response.json();
-  return fromBackendUser(backendData); // 타입 변환
-}
-```
-
-### 2. 타입 변환 레이어
+### 1. 타입 변환 레이어
 
 프론트엔드와 백엔드의 데이터 형식 차이를 `lib/utils/apiTransformers.ts`에서 처리합니다.
 
 - **요일**: Frontend `'mon'` ↔ Backend `'MONDAY'`
-- **시간**: Frontend 시간(0-23) ↔ Backend 분(0-1439)
-- **TimeSlot**: Frontend `'quiet' | 'out' | null` ↔ Backend `'QUIET' | 'BUSY'` + TimeBlock
+- **시간**: Frontend 시간(0-23) ↔ Backend ISO timestamps
+- **TimeSlot**: Frontend `'quiet' | 'out' | null` ↔ Backend `'QUIET' | 'BUSY' | 'FREE'`
 
-### 3. 통합 타임라인 렌더링
+### 2. 통합 타임라인 렌더링
 
 `components/common/TimelineRenderer.tsx`에서 모든 타임라인 렌더링을 통합 관리합니다.
 
@@ -214,7 +175,7 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 <TimelineRow label="월요일" blocks={blocks} />
 ```
 
-### 4. globals.css 기반 일관성
+### 3. globals.css 기반 일관성
 
 `app/globals.css`에 프로젝트 전체에서 사용하는 CSS 변수와 컴포넌트 클래스가 정의되어 있습니다.
 
@@ -232,43 +193,12 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 .time-slot-quiet { /* 조용시간 색상 */}
 ```
 
-### 5. 주간 배정 시스템
+### 4. 주간 배정 시스템
 
 - 주의 시작: **월요일** (일요일 아님)
 - 배정 단위: `weekStart` 키 (YYYY-MM-DD 형식의 월요일 날짜)
 - 선호도 마감: 매주 **일요일 23:59:59**
 - 유틸리티: `getWeekStart(date)`, `getDayOfWeek(date)`
-
-## 🔄 최근 업데이트 (2025-01)
-
-### Phase 5: 백엔드 API 연동 (진행 중)
-
-**✅ 완료된 통합:**
-- **Authentication**: Google OAuth, 세션 관리, 401 자동 리디렉션
-- **User Profile**: 사용자 정보 조회/수정 (localStorage 병합)
-- **Room**: 방 생성/참여
-- **Schedule**: Active/Temporary 스케줄 저장/조회, 타임라인 렌더링 개선
-
-**⏳ 예정:**
-- Preferences API 연동
-- Assignments API 연동
-- 실시간 업데이트 (WebSocket/Polling)
-
-### 코드 리팩토링 완료
-
-- **193줄 제거** (29% 감소)
-- 8개 중복 함수 통합 (`getWeekStart`, `createEmptySchedule` 등)
-- 3개 타임라인 구현 → 1개 통합 컴포넌트
-- Custom Hooks 추가 (`useApiData`, `useScheduleEditor`)
-- globals.css 확장 (28 → 270 lines)
-
-### 백엔드 연동 아키텍처
-
-- ✅ Backend API 타입 정의 (`types/api.ts`)
-- ✅ 데이터 변환 레이어 구현 (`apiTransformers.ts`)
-- ✅ 실제 엔드포인트 구현 (`lib/api/endpoints.ts`)
-- ✅ Feature flags로 점진적 통합 (`USE_REAL_*` 환경 변수)
-- ✅ CORS & Session 설정 완료
 
 ## 📚 개발 가이드
 
@@ -287,7 +217,7 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 - [ ] globals.css의 기존 클래스 확인 후 재사용
 - [ ] 날짜 계산은 `lib/utils/dateHelpers.ts` 함수 사용
 - [ ] 타임라인은 `TimelineRenderer` 컴포넌트 사용
-- [ ] API 호출은 `lib/api/client.ts` 함수 사용
+- [ ] API 호출은 `lib/api/endpoints.ts` 또는 `lib/api/client.ts` 사용
 - [ ] 로딩 상태는 `LoadingSpinner` 컴포넌트 사용
 
 ## 🔧 배포
@@ -296,7 +226,7 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 
 1. GitHub 저장소를 Vercel에 연결
 2. 자동으로 빌드 및 배포됨
-3. 환경 변수 설정 (추후 백엔드 연동 시)
+3. 환경 변수 설정
 
 ### 환경 변수
 
@@ -304,17 +234,12 @@ import { TimeLabels, TimelineBlocks, TimelineRow } from '@/components/common/Tim
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
-NEXT_PUBLIC_USE_REAL_AUTH=true
-NEXT_PUBLIC_USE_REAL_USER=true
-NEXT_PUBLIC_USE_REAL_ROOM=true
-NEXT_PUBLIC_USE_REAL_SCHEDULE=true
 ```
 
 **프로덕션 환경:**
 
 Vercel 환경 변수 설정:
 - `NEXT_PUBLIC_API_BASE_URL`: 프로덕션 백엔드 URL
-- Feature flags는 모두 `true`로 설정
 
 ## 📝 라이선스
 

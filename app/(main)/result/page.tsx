@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
-import { getCurrentUser, getRoomMembers, getCurrentAssignments } from '@/lib/api/client';
+import { getCurrentUser } from '@/lib/api/endpoints';
+import { getRoomMembers, getCurrentAssignments } from '@/lib/api/client';
 import { DAY_NAMES, TASKS } from '@/types';
 import { TASK_EMOJIS, formatTimeRange } from '@/lib/constants/tasks';
 import type { Assignment, DayOfWeek, TimeRange } from '@/types';
