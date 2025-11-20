@@ -172,6 +172,8 @@ export async function getCurrentUser(): Promise<User | null> {
       country: response.country || '',
       language: response.language || '',
       roomId: response.roomId ?? undefined,
+      workLoad: response.workLoad ?? 0, // 지난 주 업무 강도
+      room: response.room, // 방 정보 (inviteCode, name)
       createdAt: response.createdAt,
     };
   } catch (error) {
@@ -207,6 +209,8 @@ export async function updateProfile(data: {
     country: response.country || '',
     language: response.language || '',
     roomId: response.roomId ?? undefined,
+    workLoad: response.workLoad ?? 0, // 지난 주 업무 강도
+    room: response.room, // 방 정보
     createdAt: response.createdAt,
   };
 }
@@ -344,6 +348,22 @@ export async function saveSchedule(schedule: WeeklySchedule, weekStart: string):
   console.log('날짜별 블록 수:', byDate);
 
   await post<void, PostScheduleRequest>('/schedules', requestData);
+}
+
+/**
+ * 날짜별 스케줄 조회 (ACTIVE + TEMPORARY + ScheduleHistory)
+ * GET /api/schedules/daily?date=YYYY-MM-DD
+ *
+ * @param date 조회할 날짜 (YYYY-MM-DD 형식)
+ * @returns WeeklySchedule (해당 날짜만 포함)
+ */
+export async function getDailySchedule(date: string): Promise<WeeklySchedule> {
+  const response = await get<GetScheduleResponse>(`/schedules/daily?date=${date}`);
+
+  // Backend TimeBlock[] → Frontend WeeklySchedule 변환
+  const converted = fromBackendSchedule(response);
+
+  return converted;
 }
 
 // ==================== Preferences (TODO) ====================

@@ -14,8 +14,20 @@
  * - Time: ISO 8601 timestamp (날짜 포함)
  */
 
-import type { DayOfWeek, TimeSlot, WeeklySchedule } from '@/types';
-import type { BackendDayOfWeek, BackendTimeBlockType, BackendTimeBlock } from '@/types/api';
+import type {
+  DayOfWeek,
+  TimeSlot,
+  WeeklySchedule,
+  ScheduleBlock,
+  ScheduleHistory,
+  ScheduleBlockType,
+} from '@/types';
+import type {
+  BackendDayOfWeek,
+  BackendTimeBlockType,
+  BackendTimeBlock,
+  BackendScheduleHistory,
+} from '@/types/api';
 import { toISOTimestamp, hourFromISOTimestamp, addDaysToDateString } from '@/lib/utils/dateHelpers';
 
 // ==================== Day of Week Conversion ====================
@@ -81,6 +93,18 @@ export function fromBackendTimeSlot(type: BackendTimeBlockType): TimeSlot {
   if (type === 'BUSY') return 'out';
   // TASK, FREE → null (빈 시간 또는 업무 시간)
   return null;
+}
+
+/**
+ * Backend TimeBlockType → Frontend ScheduleBlockType
+ * @param type Backend TimeBlockType ('QUIET' | 'BUSY' | 'TASK' | 'FREE')
+ * @returns Frontend ScheduleBlockType ('quiet' | 'out' | 'task' | null)
+ */
+export function fromBackendBlockType(type: BackendTimeBlockType): ScheduleBlockType {
+  if (type === 'QUIET') return 'quiet';
+  if (type === 'BUSY') return 'out';
+  if (type === 'TASK') return 'task';
+  return null; // FREE
 }
 
 // ==================== Time Format Conversion ====================
@@ -308,4 +332,77 @@ export function validateBackendSchedule(
   }
 
   return { valid: true };
+}
+
+// ==================== Schedule Block Conversion (with Task Info) ====================
+
+/**
+ * Backend TimeBlock → Frontend ScheduleBlock
+ * (업무 정보, status 포함)
+ *
+ * @param block Backend TimeBlock
+ * @returns Frontend ScheduleBlock
+ */
+export function fromBackendScheduleBlock(block: BackendTimeBlock): ScheduleBlock {
+  return {
+    id: block.id || '',
+    type: fromBackendBlockType(block.type),
+    startTime: block.startTime,
+    endTime: block.endTime,
+    status: block.status || 'ACTIVE',
+    userId: block.userId || '',
+    taskInfo:
+      block.type === 'TASK' && block.roomTask
+        ? {
+            roomTaskId: block.roomTaskId || '',
+            title: block.roomTask.title,
+            difficulty: block.difficulty || 0,
+          }
+        : undefined,
+  };
+}
+
+/**
+ * Backend TimeBlock 배열 → Frontend ScheduleBlock 배열
+ * (업무 정보, status 포함)
+ *
+ * @param blocks Backend TimeBlock 배열
+ * @returns Frontend ScheduleBlock 배열
+ */
+export function fromBackendScheduleBlocks(blocks: BackendTimeBlock[]): ScheduleBlock[] {
+  return blocks.map(fromBackendScheduleBlock);
+}
+
+/**
+ * Backend ScheduleHistory → Frontend ScheduleHistory
+ *
+ * @param history Backend ScheduleHistory
+ * @returns Frontend ScheduleHistory
+ */
+export function fromBackendScheduleHistory(history: BackendScheduleHistory): ScheduleHistory {
+  return {
+    id: history.id,
+    type: fromBackendBlockType(history.type),
+    startTime: history.startTime,
+    endTime: history.endTime,
+    userId: history.userId,
+    taskInfo:
+      history.type === 'TASK' && history.roomTask
+        ? {
+            roomTaskId: history.roomTaskId || '',
+            title: history.roomTask.title,
+            difficulty: history.difficulty || 0,
+          }
+        : undefined,
+  };
+}
+
+/**
+ * Backend ScheduleHistory 배열 → Frontend ScheduleHistory 배열
+ *
+ * @param histories Backend ScheduleHistory 배열
+ * @returns Frontend ScheduleHistory 배열
+ */
+export function fromBackendScheduleHistories(histories: BackendScheduleHistory[]): ScheduleHistory[] {
+  return histories.map(fromBackendScheduleHistory);
 }

@@ -40,7 +40,7 @@ export interface GoogleAuthResponse {
 
 /**
  * 사용자 정보 조회 응답
- * GET /api/users/
+ * GET /api/users/me
  */
 export interface GetCurrentUserResponse {
   id: string;
@@ -51,6 +51,12 @@ export interface GetCurrentUserResponse {
   country?: string;
   language?: string;
   roomId?: string; // 속한 방 ID (없으면 null)
+  workLoad?: number; // 지난 주 업무 강도 (기본값 0)
+  room?: {
+    // 방 정보 (roomId가 있을 경우)
+    inviteCode: string; // 초대 코드
+    name: string; // 방 이름
+  };
   createdAt: string; // ISO 8601 형식
   updatedAt: string;
 }
@@ -125,6 +131,79 @@ export type PostScheduleRequest = BackendTimeBlock[];
  * GET /api/schedules
  */
 export type GetScheduleResponse = BackendTimeBlock[];
+
+/**
+ * 날짜별 스케줄 조회 응답
+ * GET /api/schedules/daily?date=YYYY-MM-DD
+ *
+ * ACTIVE + TEMPORARY + ScheduleHistory를 모두 포함
+ */
+export type GetDailyScheduleResponse = (BackendTimeBlock | BackendScheduleHistory)[];
+
+// ==================== Room Task ====================
+
+/**
+ * 방 업무 템플릿
+ * 방 생성 시 사용되는 업무 템플릿
+ */
+export interface BackendRoomTaskTemplate {
+  id: string;
+  title: string;
+  difficulty: number; // knapsack 가치
+  estimatedTime: number; // knapsack 용량 (분 단위)
+}
+
+/**
+ * 방별 업무
+ * 템플릿에서 복사된 실제 방 업무
+ */
+export interface BackendRoomTask {
+  id: string;
+  title: string;
+  difficulty: number; // knapsack 가치
+  estimatedTime: number; // knapsack 용량 (분 단위)
+  roomId: string;
+}
+
+// ==================== Task Preference ====================
+
+/**
+ * 업무 선호도
+ * POST /api/preferences (TODO)
+ */
+export interface BackendTaskPreference {
+  id: string;
+  priority: number; // 우선순위 (1: 1지망, 2: 2지망)
+  userId: string;
+  taskId: string; // RoomTask ID
+}
+
+/**
+ * 선호도 제출 요청
+ */
+export interface PostTaskPreferenceRequest {
+  priority: number;
+  taskId: string;
+}
+
+// ==================== Schedule History ====================
+
+/**
+ * 스케줄 히스토리 (지난 날짜의 스케줄 아카이브)
+ * GET /api/schedules/daily에서 반환될 수 있음
+ */
+export interface BackendScheduleHistory {
+  id: string;
+  startTime: string; // ISO 8601 timestamp
+  endTime: string; // ISO 8601 timestamp
+  type: BackendTimeBlockType; // QUIET, BUSY, FREE, TASK
+  roomTaskId?: string; // TASK일 경우 업무 ID
+  roomTask?: {
+    title: string; // 업무 이름
+  };
+  difficulty?: number; // TASK일 경우 난이도
+  userId: string;
+}
 
 // ==================== Error Responses ====================
 

@@ -42,6 +42,12 @@ export interface User {
   nickname?: string; // 닉네임 (선택)
   profileImage?: string;
   roomId?: string;
+  workLoad?: number; // 지난 주 업무 강도 (기본값 0)
+  room?: {
+    // 방 정보 (roomId가 있을 경우)
+    inviteCode: string; // 초대 코드
+    name: string; // 방 이름
+  };
   createdAt: string;
 }
 
@@ -167,4 +173,91 @@ export interface CalendarEvent {
   date: string; // YYYY-MM-DD
   taskName: string;
   taskId: string;
+}
+
+// ============================================
+// 스케줄 블록 관련 타입 (백엔드 대응)
+// ============================================
+
+/**
+ * 스케줄 블록 상태
+ * - ACTIVE: 현재 주 (적용 중)
+ * - TEMPORARY: 다음 주 (임시 저장)
+ */
+export type ScheduleStatus = 'ACTIVE' | 'TEMPORARY';
+
+/**
+ * 스케줄 블록 타입
+ * - quiet: 조용시간
+ * - out: 외출/바쁜 시간
+ * - task: 배정된 업무 시간
+ * - null: 빈 시간
+ */
+export type ScheduleBlockType = 'quiet' | 'out' | 'task' | null;
+
+/**
+ * 스케줄 블록 (백엔드 ScheduleBlock에 대응)
+ *
+ * 주간 스케줄의 개별 블록 정보
+ */
+export interface ScheduleBlock {
+  id: string;
+  type: ScheduleBlockType; // 블록 타입
+  startTime: string; // ISO 8601 timestamp
+  endTime: string; // ISO 8601 timestamp
+  status: ScheduleStatus; // ACTIVE | TEMPORARY
+  userId: string;
+  // TASK 타입일 경우의 업무 정보
+  taskInfo?: {
+    roomTaskId: string;
+    title: string; // 업무 이름
+    difficulty: number; // 업무 난이도
+  };
+}
+
+/**
+ * 스케줄 히스토리 (지난 날짜의 스케줄)
+ *
+ * 백엔드 ScheduleHistory에 대응
+ */
+export interface ScheduleHistory {
+  id: string;
+  type: ScheduleBlockType; // 블록 타입
+  startTime: string; // ISO 8601 timestamp
+  endTime: string; // ISO 8601 timestamp
+  userId: string;
+  // TASK 타입일 경우의 업무 정보
+  taskInfo?: {
+    roomTaskId: string;
+    title: string; // 업무 이름
+    difficulty: number; // 업무 난이도
+  };
+}
+
+// ============================================
+// 방별 업무 관련 타입
+// ============================================
+
+/**
+ * 방별 업무
+ * 템플릿에서 복사된 실제 방 업무
+ */
+export interface RoomTask {
+  id: string;
+  title: string;
+  difficulty: number; // knapsack 가치
+  estimatedTime: number; // knapsack 용량 (분 단위)
+  roomId: string;
+}
+
+/**
+ * 업무 선호도
+ * 사용자가 선택한 1지망, 2지망 정보
+ */
+export interface TaskPreference {
+  id: string;
+  priority: number; // 1: 1지망, 2: 2지망
+  userId: string;
+  taskId: string; // RoomTask ID
+  task?: RoomTask; // 업무 정보 (조회 시 포함될 수 있음)
 }
