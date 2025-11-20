@@ -62,6 +62,22 @@ async function handleResponse<T>(response: Response): Promise<T> {
       redirectToLogin();
     }
 
+    // 403 Forbidden - 방 미참여 시 온보딩으로 리디렉션
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({ message: 'Forbidden' }));
+
+      // "not participate in room" 에러인 경우 온보딩 페이지로 이동
+      if (errorData.message === 'not participate in room') {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/onboarding/join-room';
+        }
+        throw new Error('not participate in room');
+      }
+
+      // 기타 403 에러는 그대로 throw
+      throw new Error(errorData.message || 'Forbidden');
+    }
+
     // 기타 에러 응답 처리
     const errorData = await response.json().catch(() => ({
       message: `HTTP ${response.status}: ${response.statusText}`,
@@ -298,10 +314,10 @@ export async function getRoomMembers(roomId: string): Promise<User[]> {
 
 /**
  * 현재 주 스케줄 조회 (ACTIVE)
- * GET /api/schedules/ActiveSchedules
+ * GET /api/schedules/activeSchedules
  */
 export async function getActiveSchedule(): Promise<WeeklySchedule> {
-  const response = await get<GetScheduleResponse>('/schedules/ActiveSchedules');
+  const response = await get<GetScheduleResponse>('/schedules/activeSchedules');
 
   // Backend TimeBlock[] → Frontend WeeklySchedule 변환
   const converted = fromBackendSchedule(response);
@@ -311,10 +327,10 @@ export async function getActiveSchedule(): Promise<WeeklySchedule> {
 
 /**
  * 다음 주 스케줄 조회 (TEMPORARY)
- * GET /api/schedules/TemporarySchedules
+ * GET /api/schedules/temporarySchedules
  */
 export async function getTemporarySchedule(): Promise<WeeklySchedule> {
-  const response = await get<GetScheduleResponse>('/schedules/TemporarySchedules');
+  const response = await get<GetScheduleResponse>('/schedules/temporarySchedules');
 
   // Backend TimeBlock[] → Frontend WeeklySchedule 변환
   const converted = fromBackendSchedule(response);
