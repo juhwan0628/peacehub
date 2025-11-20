@@ -38,6 +38,9 @@ export default function DashboardPage() {
   const users = (parallelData?.[1] as User[]) || [];
   const assignments = (parallelData?.[2] as Assignment[]) || [];
 
+  // 🔧 임시: users가 비어있으면 currentUser만이라도 표시
+  const displayUsers = users.length > 0 ? users : (currentUser ? [currentUser] : []);
+
   // 2. Fetch my active schedule (현재 주)
   const { data: mySchedule, isLoading: isLoadingMySchedule, error: myScheduleError } = useApiData(
     getActiveSchedule,
@@ -45,17 +48,29 @@ export default function DashboardPage() {
   );
 
   // 3. Fetch all schedules once users are loaded (통합 타임라인용)
+  // 🔧 임시: mySchedule을 Map 형식으로 변환하여 사용 (getRoomMembers가 빈 배열 반환하므로)
   const getAllSchedulesCallback = useCallback(async () => {
-    if (!users || !Array.isArray(users) || users.length === 0) {
+    if (!displayUsers || displayUsers.length === 0) {
       return new Map<string, WeeklySchedule>();
     }
-    const userIds = users.map(u => u.id);
-    return getAllSchedules(userIds);
-  }, [users]);
+
+    // 🔧 임시: 실제 API가 없으므로 내 스케줄만 Map으로 반환
+    if (currentUser && mySchedule) {
+      const scheduleMap = new Map<string, WeeklySchedule>();
+      scheduleMap.set(currentUser.id, mySchedule);
+      return scheduleMap;
+    }
+
+    // 원래 로직 (백엔드 구현되면 활성화)
+    // const userIds = displayUsers.map(u => u.id);
+    // return getAllSchedules(userIds);
+
+    return new Map<string, WeeklySchedule>();
+  }, [displayUsers, currentUser, mySchedule]);
 
   const { data: allSchedules, isLoading: isLoadingSchedules, error: schedulesError } = useApiData(
     getAllSchedulesCallback,
-    { autoFetch: !!users && Array.isArray(users) && users.length > 0 }
+    { autoFetch: !!currentUser && !!mySchedule }
   );
 
   const isLoading = isLoadingParallel || isLoadingMySchedule || isLoadingSchedules;
@@ -116,12 +131,12 @@ export default function DashboardPage() {
           </div>
 
           {/* 통합 타임라인 (모두) */}
-          {allSchedules && users && (
+          {allSchedules && displayUsers && displayUsers.length > 0 && (
             <CombinedTimelineBar
               date={selectedDate}
               allSchedules={allSchedules}
               assignments={assignments || []}
-              users={users}
+              users={displayUsers}
             />
           )}
 
