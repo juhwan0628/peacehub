@@ -157,9 +157,8 @@ export function formatTimeRemaining(deadline: Date): string {
  */
 export function getNextWeekStart(date: Date = new Date()): string {
   const weekStart = getWeekStart(date);
-  const monday = new Date(weekStart + 'T00:00:00');
-  monday.setDate(monday.getDate() + 7);
-  return monday.toISOString().split('T')[0];
+  // addDaysToDateString 사용하여 시간대 문제 방지
+  return addDaysToDateString(weekStart, 7);
 }
 
 /**

@@ -76,16 +76,19 @@ export default function MonthlyCalendar({
     return tasksForDay;
   };
 
-  // 캘린더 날짜 생성
+  // 캘린더 날짜 생성 (월요일 시작)
   const generateCalendarDays = () => {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay(); // 0 = 일요일
+    const startDay = firstDay.getDay(); // 0 = 일요일, 1 = 월요일, ...
 
     const days: (Date | null)[] = [];
 
+    // 월요일 시작으로 조정: 일요일(0)은 6으로, 월요일(1)은 0으로
+    const adjustedStartDay = startDay === 0 ? 6 : startDay - 1;
+
     // 이전 달 빈 칸
-    for (let i = 0; i < startDay; i++) {
+    for (let i = 0; i < adjustedStartDay; i++) {
       days.push(null);
     }
 
@@ -122,16 +125,16 @@ export default function MonthlyCalendar({
         </button>
       </div>
 
-      {/* 요일 헤더 */}
+      {/* 요일 헤더 (월요일 시작) */}
       <div className="grid grid-cols-7 gap-1 mb-1">
-        {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+        {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
           <div
             key={day}
             className={`text-center text-xs font-semibold py-1 ${
-              index === 0
-                ? 'text-red-600'
-                : index === 6
+              index === 5
                 ? 'text-blue-600'
+                : index === 6
+                ? 'text-red-600'
                 : 'text-gray-700'
             }`}
           >
