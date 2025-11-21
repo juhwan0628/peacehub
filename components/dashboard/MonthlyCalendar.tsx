@@ -166,11 +166,11 @@ export default function MonthlyCalendar({
             <button
               key={date.toISOString()}
               onClick={() => onDateClick(date)}
-              className={`h-12 w-full border rounded p-1 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors ${
-                isToday
-                  ? 'border-primary-500 bg-primary-50'
-                  : isSelected
-                  ? 'border-primary-400 bg-primary-100'
+              className={`h-12 w-full border rounded p-1 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors relative ${
+                isSelected
+                  ? 'border-2 border-primary-600 bg-primary-100 ring-2 ring-primary-300'
+                  : isToday
+                  ? 'border-2 border-primary-500 bg-primary-50'
                   : 'border-gray-200'
               }`}
             >

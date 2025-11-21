@@ -6,7 +6,7 @@ import CombinedTimelineBar from '@/components/dashboard/CombinedTimelineBar';
 import TimelineBar from '@/components/dashboard/TimelineBar';
 import { MainLoadingSpinner } from '@/components/common/LoadingSpinner';
 import type { User, Assignment, WeeklySchedule } from '@/types';
-import { getCurrentUser, getActiveSchedule } from '@/lib/api/endpoints';
+import { getCurrentUser, getDailySchedule } from '@/lib/api/endpoints';
 import {
   getRoomMembers,
   getCurrentAssignments,
@@ -40,9 +40,19 @@ export default function DashboardPage() {
   // 🔧 임시: users가 비어있으면 currentUser만이라도 표시
   const displayUsers = users.length > 0 ? users : (currentUser ? [currentUser] : []);
 
-  // 2. Fetch my active schedule (현재 주)
+  // 2. Fetch daily schedule for selected date (선택한 날짜의 스케줄 조회)
+  const selectedDateStr = useMemo(
+    () => `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`,
+    [selectedDate]
+  );
+
+  const getDailyScheduleCallback = useCallback(
+    () => getDailySchedule(selectedDateStr),
+    [selectedDateStr]
+  );
+
   const { data: mySchedule, isLoading: isLoadingMySchedule, error: myScheduleError } = useApiData(
-    getActiveSchedule,
+    getDailyScheduleCallback,
     { autoFetch: !!currentUser }
   );
 
@@ -116,8 +126,14 @@ export default function DashboardPage() {
         <div ref={detailsRef} className="space-y-6 scroll-mt-20">
           <div className="text-center">
             <h2 className="text-xl font-bold text-gray-800">
-              {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 상세
+              {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일
+              {new Date().toDateString() === selectedDate.toDateString() && (
+                <span className="ml-2 text-primary-600">(오늘)</span>
+              )}
             </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'][selectedDate.getDay()]}
+            </p>
           </div>
 
           {/* 통합 타임라인 (모두) */}
